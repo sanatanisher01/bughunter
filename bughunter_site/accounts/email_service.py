@@ -1,67 +1,43 @@
-from django.core.mail import EmailMultiAlternatives
+from django.core.mail import EmailMultiAlternatives, send_mail
 from django.template.loader import render_to_string
 from django.conf import settings
 from django.utils.html import strip_tags
 import logging
-import threading
-from functools import wraps
 
 logger = logging.getLogger(__name__)
 
-def async_email(func):
-    """Decorator to send emails asynchronously"""
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        try:
-            # Always send synchronously but with timeout to prevent worker issues
-            return func(*args, **kwargs)
-        except Exception as e:
-            logger.error(f"Email sending failed: {e}")
-            return False
-    return wrapper
-
 class EmailService:
     @staticmethod
-    @async_email
     def send_verification_email(user, verification_url):
         """Send email verification email"""
         try:
-            logger.info(f"Attempting to send verification email to {user.email}")
-            logger.info(f"Email settings - Host: {settings.EMAIL_HOST}, Port: {settings.EMAIL_PORT}, User: {settings.EMAIL_HOST_USER}")
+            subject = "Verify Your Email - BugHunter"
             
-            subject = "🔍 Verify Your Email - BugHunter"
+            # Simple text message as fallback
+            message = f"""Hi {user.name},
+
+Please verify your email address by clicking the link below:
+{verification_url}
+
+If you didn't create an account, please ignore this email.
+
+Best regards,
+BugHunter Team"""
             
-            context = {
-                'user': user,
-                'verification_url': verification_url,
-                'site_url': 'https://bughunters.onrender.com'
-            }
-            
-            html_content = render_to_string('accounts/emails/email_verification.html', context)
-            text_content = strip_tags(html_content)
-            
-            msg = EmailMultiAlternatives(
+            # Try simple send_mail first
+            result = send_mail(
                 subject=subject,
-                body=text_content,
+                message=message,
                 from_email=settings.DEFAULT_FROM_EMAIL,
-                to=[user.email]
+                recipient_list=[user.email],
+                fail_silently=False
             )
-            msg.attach_alternative(html_content, "text/html")
             
-            result = msg.send()
-            logger.info(f"Email send result: {result}")
-            
-            if result:
-                logger.info(f"Verification email sent successfully to {user.email}")
-                return True
-            else:
-                logger.error(f"Email send returned 0 - no emails sent")
-                return False
+            logger.info(f"Verification email sent to {user.email}, result: {result}")
+            return result > 0
             
         except Exception as e:
             logger.error(f"Failed to send verification email to {user.email}: {str(e)}")
-            import traceback
-            logger.error(f"Full traceback: {traceback.format_exc()}")
             return False
     
     @staticmethod

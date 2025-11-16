@@ -28,9 +28,19 @@ def signup_view(request):
     if request.method == 'POST':
         form = SignUpForm(request.POST)
         if form.is_valid():
+            email = form.cleaned_data['email']
+            username = form.cleaned_data['username']
+            
+            # Check if unverified user already exists
+            existing_user = User.objects.filter(email=email, is_verified=False).first()
+            if existing_user:
+                # Delete existing unverified user to allow re-registration
+                existing_user.delete()
+                messages.info(request, 'Previous unverified account removed. Creating new account...')
+            
             user = form.save(commit=False)
             user.name = form.cleaned_data['name']
-            user.email = form.cleaned_data['email']
+            user.email = email
             user.is_verified = False
             user.save()
             
@@ -42,12 +52,19 @@ def signup_view(request):
                 reverse('verify_email') + f'?token={token.token}'
             )
             
-            if EmailService.send_verification_email(user, verification_url):
-                messages.success(request, 'Registration successful! Please check your email to verify your account.')
-                return redirect('login')
-            else:
-                user.delete()  # Clean up if email fails
-                messages.error(request, 'Failed to send verification email. Please try again.')
+            # Always show success message to prevent email enumeration
+            messages.success(request, 'Registration successful! Please check your email to verify your account. If you don\'t receive the email, you can request a new one from the login page.')
+            
+            # Try to send email but don't fail registration if it fails
+            try:
+                EmailService.send_verification_email(user, verification_url)
+            except Exception as e:
+                # Log error but don't show to user
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Failed to send verification email to {email}: {e}")
+            
+            return redirect('login')
     else:
         form = SignUpForm()
     
