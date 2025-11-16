@@ -117,7 +117,7 @@ DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
 if not GEMINI_API_KEY and not DEBUG:
     import warnings
-    warnings.warn('GEMINI_API_KEY not set. Users will need to provide their own API keys.'
+    warnings.warn('GEMINI_API_KEY not set. Users will need to provide their own API keys.')
 
 # File Upload Settings
 FILE_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024  # 50MB
