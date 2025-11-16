@@ -12,14 +12,12 @@ def async_email(func):
     """Decorator to send emails asynchronously"""
     @wraps(func)
     def wrapper(*args, **kwargs):
-        if settings.DEBUG:
+        try:
+            # Always send synchronously but with timeout to prevent worker issues
             return func(*args, **kwargs)
-        else:
-            # Send email in background thread to prevent worker timeout
-            thread = threading.Thread(target=func, args=args, kwargs=kwargs)
-            thread.daemon = True
-            thread.start()
-            return True
+        except Exception as e:
+            logger.error(f"Email sending failed: {e}")
+            return False
     return wrapper
 
 class EmailService:
@@ -28,12 +26,15 @@ class EmailService:
     def send_verification_email(user, verification_url):
         """Send email verification email"""
         try:
+            logger.info(f"Attempting to send verification email to {user.email}")
+            logger.info(f"Email settings - Host: {settings.EMAIL_HOST}, Port: {settings.EMAIL_PORT}, User: {settings.EMAIL_HOST_USER}")
+            
             subject = "🔍 Verify Your Email - BugHunter"
             
             context = {
                 'user': user,
                 'verification_url': verification_url,
-                'site_url': settings.SITE_URL if hasattr(settings, 'SITE_URL') else 'http://localhost:8000'
+                'site_url': 'https://bughunters.onrender.com'
             }
             
             html_content = render_to_string('accounts/emails/email_verification.html', context)
@@ -46,13 +47,21 @@ class EmailService:
                 to=[user.email]
             )
             msg.attach_alternative(html_content, "text/html")
-            msg.send()
             
-            logger.info(f"Verification email sent to {user.email}")
-            return True
+            result = msg.send()
+            logger.info(f"Email send result: {result}")
+            
+            if result:
+                logger.info(f"Verification email sent successfully to {user.email}")
+                return True
+            else:
+                logger.error(f"Email send returned 0 - no emails sent")
+                return False
             
         except Exception as e:
-            logger.error(f"Failed to send verification email: {e}")
+            logger.error(f"Failed to send verification email to {user.email}: {str(e)}")
+            import traceback
+            logger.error(f"Full traceback: {traceback.format_exc()}")
             return False
     
     @staticmethod
