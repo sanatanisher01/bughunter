@@ -3,11 +3,28 @@ from django.template.loader import render_to_string
 from django.conf import settings
 from django.utils.html import strip_tags
 import logging
+import threading
+from functools import wraps
 
 logger = logging.getLogger(__name__)
 
+def async_email(func):
+    """Decorator to send emails asynchronously"""
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        if settings.DEBUG:
+            return func(*args, **kwargs)
+        else:
+            # Send email in background thread to prevent worker timeout
+            thread = threading.Thread(target=func, args=args, kwargs=kwargs)
+            thread.daemon = True
+            thread.start()
+            return True
+    return wrapper
+
 class EmailService:
     @staticmethod
+    @async_email
     def send_verification_email(user, verification_url):
         """Send email verification email"""
         try:
