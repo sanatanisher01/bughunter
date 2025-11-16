@@ -1,0 +1,60 @@
+{% extends 'accounts/emails/base_email.html' %}
+
+{% block title %}Analysis Failed - BugHunter{% endblock %}
+
+{% block content %}
+<div class="greeting">
+    We encountered an issue 😔
+</div>
+
+<div class="message">
+    Hi {{ user.first_name|default:user.username }}, unfortunately we weren't able to complete the analysis of your project "{{ job.project_name }}".
+</div>
+
+<div class="status-card" style="border-left-color: #e53e3e;">
+    <div class="status-icon">❌</div>
+    <div class="status-title" style="color: #e53e3e;">Analysis Failed</div>
+    <div class="status-description">
+        Don't worry - this happens sometimes and we're here to help!
+    </div>
+</div>
+
+{% if error_message %}
+<div class="message" style="background: #fed7d7; border: 1px solid #feb2b2; border-radius: 8px; padding: 20px; margin: 20px 0;">
+    <strong style="color: #c53030;">Error Details:</strong><br>
+    <span style="color: #e53e3e; font-family: monospace; font-size: 14px;">{{ error_message }}</span>
+</div>
+{% endif %}
+
+<div class="message">
+    <strong>Common causes and solutions:</strong>
+    <ul style="margin: 15px 0; padding-left: 20px; color: #4a5568;">
+        <li>🔗 <strong>GitHub Repository:</strong> Make sure the repository is public and accessible</li>
+        <li>📁 <strong>ZIP File:</strong> Ensure the file contains supported code files and isn't corrupted</li>
+        <li>📏 <strong>File Size:</strong> Very large projects might timeout - try analyzing smaller sections</li>
+        <li>🔧 <strong>File Format:</strong> Check that your code uses supported file extensions</li>
+    </ul>
+</div>
+
+<div style="text-align: center;">
+    <a href="{{ site_url }}/bughunter" class="cta-button">
+        🔄 Try Again
+    </a>
+</div>
+
+<div class="message" style="background: #ebf8ff; border: 1px solid #90cdf4; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center;">
+    <div style="font-size: 20px; margin-bottom: 10px;">💡</div>
+    <strong style="color: #2b6cb0;">Need Help?</strong><br>
+    <span style="color: #3182ce;">Our support team is ready to assist you. Contact us with your project details and we'll help resolve the issue.</span>
+</div>
+
+<div style="text-align: center; margin-top: 20px;">
+    <a href="{{ site_url }}/support" style="color: #7B5CFF; text-decoration: none; font-weight: 600;">
+        📧 Contact Support
+    </a>
+</div>
+
+<div class="message" style="font-size: 14px; color: #718096; text-align: center; margin-top: 30px;">
+    We're constantly improving our analysis engine. Your feedback helps us make BugHunter better for everyone.
+</div>
+{% endblock %}

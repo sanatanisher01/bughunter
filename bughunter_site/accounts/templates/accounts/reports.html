@@ -1,0 +1,235 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}Analysis Reports - BugHunter{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <div class="header-content">
+            <h1 class="dashboard-title">📈 Analysis Reports</h1>
+            <p class="dashboard-subtitle">View your complete analysis history and insights</p>
+        </div>
+        <div class="header-actions">
+            <a href="{% url 'bughunter' %}" class="btn btn-primary">
+                🔍 New Analysis
+            </a>
+        </div>
+    </div>
+
+    {% if jobs %}
+    <div class="reports-grid">
+        {% for job in jobs %}
+        <div class="report-card">
+            <div class="report-header">
+                <div class="report-info">
+                    <h3 class="report-title">{{ job.project_name|default:"Code Analysis" }}</h3>
+                    <div class="report-meta">
+                        <span class="report-date">{{ job.created_at|date:"M d, Y" }}</span>
+                        <span class="report-status status-{{ job.status|lower }}">{{ job.get_status_display }}</span>
+                    </div>
+                </div>
+                <div class="report-icon">
+                    {% if job.github_url %}🔗{% elif job.zip_file %}📁{% else %}💻{% endif %}
+                </div>
+            </div>
+            
+            {% if job.status == 'COMPLETED' and job.summary %}
+            <div class="report-stats">
+                <div class="stat-item">
+                    <span class="stat-number">{{ job.summary.total_files|default:0 }}</span>
+                    <span class="stat-label">Files</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number bugs">{{ job.summary.total_bugs|default:0 }}</span>
+                    <span class="stat-label">Bugs</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number security">{{ job.summary.total_vulnerabilities|default:0 }}</span>
+                    <span class="stat-label">Security</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number quality">{{ job.summary.total_smells|default:0 }}</span>
+                    <span class="stat-label">Quality</span>
+                </div>
+            </div>
+            
+            <div class="report-actions">
+                <a href="{% url 'bughunter_results' job.id %}" class="btn btn-secondary btn-small">
+                    👁️ View Report
+                </a>
+            </div>
+            {% elif job.status == 'FAILED' %}
+            <div class="report-error">
+                <span class="error-icon">❌</span>
+                <span class="error-text">Analysis failed</span>
+            </div>
+            {% else %}
+            <div class="report-pending">
+                <span class="pending-icon">⏳</span>
+                <span class="pending-text">Analysis in progress...</span>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">📊</div>
+        <h3 class="empty-title">No Reports Yet</h3>
+        <p class="empty-description">Start your first code analysis to see reports here</p>
+        <a href="{% url 'bughunter' %}" class="btn btn-primary btn-large">
+            🔍 Start Analysis
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.reports-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 24px;
+    margin-top: 32px;
+}
+
+.report-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 24px;
+    transition: all 0.3s ease;
+}
+
+.report-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(123, 92, 255, 0.1);
+}
+
+.report-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.report-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.report-meta {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.report-date {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.report-status {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-completed {
+    background: var(--success-bg);
+    color: var(--success-text);
+}
+
+.status-failed {
+    background: var(--danger-bg);
+    color: var(--danger-text);
+}
+
+.status-pending {
+    background: var(--warning-bg);
+    color: var(--warning-text);
+}
+
+.report-icon {
+    font-size: 24px;
+    opacity: 0.7;
+}
+
+.report-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-number {
+    display: block;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.stat-number.bugs {
+    color: var(--danger);
+}
+
+.stat-number.security {
+    color: var(--warning);
+}
+
+.stat-number.quality {
+    color: var(--info);
+}
+
+.stat-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.report-error,
+.report-pending {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+.report-error {
+    background: var(--danger-bg);
+    color: var(--danger-text);
+}
+
+.report-pending {
+    background: var(--warning-bg);
+    color: var(--warning-text);
+}
+
+.report-actions {
+    display: flex;
+    gap: 12px;
+}
+
+@media (max-width: 768px) {
+    .reports-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .report-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+</style>
+{% endblock %}

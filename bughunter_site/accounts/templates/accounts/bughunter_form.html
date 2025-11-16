@@ -1,0 +1,1219 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}Code Analysis - BugHunter{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'accounts/css/dark-select.css' %}">
+<style>
+/* Analysis Page Specific Styles */
+.analysis-page {
+    padding: var(--space-xl) 0;
+    min-height: calc(100vh - 72px);
+}
+
+.analysis-header {
+    text-align: center;
+    margin-bottom: var(--space-2xl);
+}
+
+.analysis-title {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 700;
+    margin-bottom: var(--space-sm);
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.analysis-subtitle {
+    color: var(--text-muted);
+    font-size: 1.125rem;
+    margin: 0;
+}
+
+.analysis-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: var(--space-lg);
+    margin-bottom: var(--space-2xl);
+}
+
+.option-card {
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 2px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    padding: var(--space-xl);
+    box-shadow: var(--shadow-soft);
+    transition: all var(--transition-medium);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.option-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--primary-gradient);
+    transform: scaleX(0);
+    transition: transform var(--transition-medium);
+}
+
+.option-card:hover::before {
+    transform: scaleX(1);
+}
+
+.option-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-strong);
+    border-color: #7B5CFF;
+}
+
+.option-card.active {
+    border-color: #7B5CFF;
+    box-shadow: 0 0 0 3px rgba(123, 92, 255, 0.1);
+}
+
+.option-card.active::before {
+    transform: scaleX(1);
+}
+
+.option-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-md);
+}
+
+.option-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-md);
+    background: var(--primary-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    color: white;
+}
+
+.option-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.option-description {
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: var(--space-md);
+}
+
+.option-features {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.option-features li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin-bottom: var(--space-xs);
+}
+
+.option-features li::before {
+    content: '✓';
+    color: var(--success);
+    font-weight: bold;
+}
+
+/* Form Styles */
+.analysis-form {
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    padding: var(--space-2xl);
+    box-shadow: var(--shadow-soft);
+    margin-bottom: var(--space-2xl);
+}
+
+.form-section {
+    margin-bottom: var(--space-xl);
+}
+
+.form-section.hidden {
+    display: none;
+}
+
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-md);
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.section-icon {
+    font-size: 1.5rem;
+}
+
+/* GitHub URL Input */
+.url-input {
+    position: relative;
+}
+
+.url-input input {
+    width: 100%;
+    padding: var(--space-md) var(--space-md) var(--space-md) 3rem;
+    background: var(--bg-soft);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 1rem;
+    transition: all var(--transition-fast);
+}
+
+.url-input input:focus {
+    outline: none;
+    border-color: #7B5CFF;
+    box-shadow: 0 0 0 3px rgba(123, 92, 255, 0.1);
+    background: var(--bg-elevated);
+}
+
+.url-input::before {
+    content: '🔗';
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.25rem;
+    z-index: 2;
+}
+
+/* Drag and Drop Upload */
+.upload-area {
+    border: 2px dashed var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: var(--space-2xl);
+    text-align: center;
+    background: var(--bg-soft);
+    transition: all var(--transition-medium);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.upload-area::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(123, 92, 255, 0.1), transparent);
+    transition: left 0.5s;
+}
+
+.upload-area:hover::before {
+    left: 100%;
+}
+
+.upload-area:hover {
+    border-color: #7B5CFF;
+    background: var(--bg-elevated);
+    transform: translateY(-2px);
+}
+
+.upload-area.dragover {
+    border-color: #7B5CFF;
+    background: rgba(123, 92, 255, 0.1);
+    transform: scale(1.02);
+}
+
+.upload-icon {
+    font-size: 3rem;
+    margin-bottom: var(--space-md);
+    color: var(--text-muted);
+}
+
+.upload-text {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-sm);
+}
+
+.upload-hint {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    margin-bottom: var(--space-md);
+}
+
+.upload-button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-sm) var(--space-md);
+    background: var(--primary-gradient);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.upload-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(123, 92, 255, 0.3);
+}
+
+.file-input {
+    display: none;
+}
+
+.file-selected {
+    margin-top: var(--space-md);
+    padding: var(--space-md);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.file-info {
+    flex: 1;
+}
+
+.file-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-xs);
+}
+
+.file-size {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+.file-remove {
+    background: none;
+    border: none;
+    color: var(--danger);
+    cursor: pointer;
+    font-size: 1.25rem;
+    padding: var(--space-xs);
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+}
+
+.file-remove:hover {
+    background: rgba(255, 93, 96, 0.1);
+}
+
+/* Code Input */
+.code-input {
+    position: relative;
+}
+
+.code-input textarea {
+    width: 100%;
+    min-height: 200px;
+    padding: var(--space-md);
+    background: var(--bg-soft);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-family: var(--font-code);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    resize: vertical;
+    transition: all var(--transition-fast);
+}
+
+.code-input textarea:focus {
+    outline: none;
+    border-color: #7B5CFF;
+    box-shadow: 0 0 0 3px rgba(123, 92, 255, 0.1);
+    background: var(--bg-elevated);
+}
+
+.language-select {
+    margin-top: var(--space-md);
+}
+
+/* Custom Dark Dropdown Styles */
+.language-select {
+    position: relative;
+}
+
+.custom-select {
+    position: relative;
+    width: 100%;
+}
+
+.custom-select select {
+    width: 100%;
+    padding: var(--space-md);
+    background: #0F172A;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    color: #FFFFFF;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5"><path fill="%23FFFFFF" d="M2 0L0 2h4zm0 5L0 3h4z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 12px;
+    padding-right: 40px;
+}
+
+.custom-select select:focus {
+    outline: none;
+    border-color: #7B5CFF;
+    box-shadow: 0 0 0 3px rgba(123, 92, 255, 0.1);
+    background-color: #1E293B;
+}
+
+.custom-select select:hover {
+    background-color: #1E293B;
+    border-color: #7B5CFF;
+}
+
+/* Firefox specific styles */
+@-moz-document url-prefix() {
+    .custom-select select {
+        background-image: none;
+        padding-right: var(--space-md);
+    }
+    
+    .custom-select::after {
+        content: '▼';
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #FFFFFF;
+        pointer-events: none;
+        font-size: 12px;
+    }
+}
+
+/* Cross-browser option styling */
+.custom-select select option {
+    background-color: #0F172A;
+    color: #FFFFFF;
+    padding: 8px 12px;
+    border: none;
+}
+
+.custom-select select option:hover,
+.custom-select select option:focus,
+.custom-select select option:checked {
+    background-color: #1E293B;
+    color: #FFFFFF;
+}
+
+.custom-select select option:disabled {
+    background-color: #0F172A;
+    color: #94A3B8;
+}
+
+/* Webkit browsers (Chrome, Safari, Edge) */
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+    .custom-select select {
+        background-color: #0F172A;
+    }
+    
+    .custom-select select option {
+        background-color: #0F172A;
+        color: #FFFFFF;
+    }
+    
+    .custom-select select option:hover {
+        background-color: #1E293B;
+    }
+}
+
+/* Enhanced dropdown for better cross-browser support */
+.enhanced-select {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+.enhanced-select select {
+    width: 100%;
+    padding: var(--space-md);
+    padding-right: 40px;
+    background: #0F172A;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    color: #FFFFFF;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+.enhanced-select::after {
+    content: '▼';
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94A3B8;
+    pointer-events: none;
+    font-size: 12px;
+    transition: all var(--transition-fast);
+}
+
+.enhanced-select:hover::after {
+    color: #7B5CFF;
+}
+
+.enhanced-select select:focus {
+    outline: none;
+    border-color: #7B5CFF;
+    box-shadow: 0 0 0 3px rgba(123, 92, 255, 0.1);
+    background-color: #1E293B;
+}
+
+.enhanced-select select:hover {
+    background-color: #1E293B;
+    border-color: #7B5CFF;
+}
+
+/* Dark scrollbar for dropdown */
+.enhanced-select select::-webkit-scrollbar {
+    width: 8px;
+}
+
+.enhanced-select select::-webkit-scrollbar-track {
+    background: #0F172A;
+}
+
+.enhanced-select select::-webkit-scrollbar-thumb {
+    background: #1E293B;
+    border-radius: 4px;
+}
+
+.enhanced-select select::-webkit-scrollbar-thumb:hover {
+    background: #7B5CFF;
+}
+
+/* Submit Button */
+.submit-section {
+    text-align: center;
+    margin-top: var(--space-2xl);
+}
+
+.submit-button {
+    padding: var(--space-md) var(--space-2xl);
+    font-size: 1.125rem;
+    font-weight: 600;
+    position: relative;
+    overflow: hidden;
+}
+
+.submit-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Progress Section */
+.progress-section {
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    padding: var(--space-xl);
+    margin-top: var(--space-lg);
+    display: none;
+}
+
+.progress-section.active {
+    display: block;
+    animation: slideUp 0.5s ease-out;
+}
+
+.progress-header {
+    text-align: center;
+    margin-bottom: var(--space-lg);
+}
+
+.progress-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-sm);
+}
+
+.progress-steps {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+}
+
+.progress-step {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    background: var(--bg-soft);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-medium);
+}
+
+.progress-step.active {
+    background: rgba(123, 92, 255, 0.1);
+    border-color: #7B5CFF;
+}
+
+.progress-step.completed {
+    background: rgba(0, 210, 127, 0.1);
+    border-color: var(--success);
+}
+
+.step-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--bg-elevated);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    border: 2px solid var(--border-subtle);
+    transition: all var(--transition-medium);
+}
+
+.progress-step.active .step-icon {
+    background: #7B5CFF;
+    border-color: #7B5CFF;
+    color: white;
+    animation: pulse 2s infinite;
+}
+
+.progress-step.completed .step-icon {
+    background: var(--success);
+    border-color: var(--success);
+    color: white;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.step-content {
+    flex: 1;
+}
+
+.step-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-xs);
+}
+
+.step-description {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+.progress-note {
+    background: rgba(255, 195, 0, 0.1);
+    border: 1px solid var(--warning);
+    border-radius: var(--radius-md);
+    padding: var(--space-md);
+    color: var(--warning);
+    font-size: 0.875rem;
+    text-align: center;
+}
+
+/* Info Section */
+.info-section {
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    padding: var(--space-xl);
+    box-shadow: var(--shadow-soft);
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--space-lg);
+}
+
+.info-card {
+    padding: var(--space-lg);
+    background: var(--bg-soft);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+}
+
+.info-card h4 {
+    color: var(--text-primary);
+    margin-bottom: var(--space-md);
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.info-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.info-list li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-sm);
+    font-size: 0.875rem;
+}
+
+.info-list li::before {
+    content: '•';
+    color: #7B5CFF;
+    font-weight: bold;
+}
+
+.language-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+}
+
+.language-tag {
+    padding: var(--space-xs) var(--space-sm);
+    background: var(--primary-gradient);
+    color: white;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+/* Error Messages */
+.error-message {
+    color: var(--danger);
+    font-size: 0.875rem;
+    margin-top: var(--space-xs);
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.error-message::before {
+    content: '⚠️';
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .analysis-options {
+        grid-template-columns: 1fr;
+    }
+    
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .progress-steps {
+        gap: var(--space-sm);
+    }
+    
+    .progress-step {
+        flex-direction: column;
+        text-align: center;
+        gap: var(--space-sm);
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'accounts/js/bughunter_form.js' %}"></script>
+<script>
+// Enhanced Analysis Form Interactions
+document.addEventListener('DOMContentLoaded', function() {
+    const optionCards = document.querySelectorAll('.option-card');
+    const formSections = document.querySelectorAll('.form-section');
+    const form = document.getElementById('analysis-form');
+    const submitButton = document.querySelector('.submit-button');
+    const progressSection = document.querySelector('.progress-section');
+    
+    let selectedOption = null;
+    
+    // Option card selection
+    optionCards.forEach((card, index) => {
+        card.addEventListener('click', function() {
+            // Remove active class from all cards
+            optionCards.forEach(c => c.classList.remove('active'));
+            
+            // Add active class to clicked card
+            this.classList.add('active');
+            
+            // Hide all form sections
+            formSections.forEach(section => section.classList.add('hidden'));
+            
+            // Show corresponding form section
+            if (formSections[index]) {
+                formSections[index].classList.remove('hidden');
+            }
+            
+            selectedOption = index;
+            updateSubmitButton();
+        });
+    });
+    
+    // Drag and drop functionality
+    const uploadArea = document.querySelector('.upload-area');
+    const fileInput = document.querySelector('.file-input');
+    const fileSelected = document.querySelector('.file-selected');
+    
+    if (uploadArea && fileInput) {
+        uploadArea.addEventListener('click', () => fileInput.click());
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFileSelect(files[0]);
+            }
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileSelect(e.target.files[0]);
+            }
+        });
+    }
+    
+    function handleFileSelect(file) {
+        if (file.type !== 'application/zip' && !file.name.endsWith('.zip')) {
+            alert('Please select a ZIP file.');
+            return;
+        }
+        
+        if (file.size > 50 * 1024 * 1024) { // 50MB
+            alert('File size must be less than 50MB.');
+            return;
+        }
+        
+        // Update UI to show selected file
+        document.querySelector('.file-name').textContent = file.name;
+        document.querySelector('.file-size').textContent = formatFileSize(file.size);
+        fileSelected.style.display = 'flex';
+        
+        // Update form input
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        fileInput.files = dataTransfer.files;
+        
+        updateSubmitButton();
+    }
+    
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    // File remove functionality
+    document.querySelector('.file-remove')?.addEventListener('click', () => {
+        fileInput.value = '';
+        fileSelected.style.display = 'none';
+        updateSubmitButton();
+    });
+    
+    // Code input and language selection
+    const codeTextarea = document.querySelector('textarea[name="code_input"]');
+    const languageSelect = document.querySelector('.language-select');
+    const darkSelect = document.querySelector('.dark-select select');
+    
+    if (codeTextarea) {
+        codeTextarea.addEventListener('input', function() {
+            if (this.value.trim()) {
+                languageSelect.style.display = 'block';
+            } else {
+                languageSelect.style.display = 'none';
+            }
+            updateSubmitButton();
+        });
+    }
+    
+    // Dark select dropdown behavior
+    if (darkSelect) {
+        // Initialize with proper styling
+        darkSelect.style.color = darkSelect.value ? '#FFFFFF' : '#94A3B8';
+        
+        // Force dark styling on options for better cross-browser support
+        darkSelect.addEventListener('focus', function() {
+            // Apply dark theme to options when dropdown opens
+            const options = this.querySelectorAll('option');
+            options.forEach(option => {
+                if (!option.style.backgroundColor) {
+                    option.style.backgroundColor = '#0F172A';
+                    option.style.color = option.value === '' ? '#94A3B8' : '#FFFFFF';
+                }
+            });
+        });
+        
+        // Handle option selection
+        darkSelect.addEventListener('change', function() {
+            this.style.color = this.value ? '#FFFFFF' : '#94A3B8';
+            updateSubmitButton();
+        });
+        
+        // Ensure options maintain dark styling
+        darkSelect.addEventListener('mousedown', function() {
+            setTimeout(() => {
+                const options = this.querySelectorAll('option');
+                options.forEach(option => {
+                    option.style.backgroundColor = '#0F172A';
+                    option.style.color = option.value === '' ? '#94A3B8' : '#FFFFFF';
+                });
+            }, 0);
+        });
+    }
+    
+    // URL input validation
+    const urlInput = document.querySelector('input[name="github_url"]');
+    if (urlInput) {
+        urlInput.addEventListener('input', updateSubmitButton);
+    }
+    
+    function updateSubmitButton() {
+        let hasValidInput = false;
+        
+        if (selectedOption === 0) { // GitHub URL
+            hasValidInput = urlInput?.value.trim() && isValidGitHubUrl(urlInput.value);
+        } else if (selectedOption === 1) { // ZIP file
+            hasValidInput = fileInput?.files.length > 0;
+        } else if (selectedOption === 2) { // Code input
+            const hasCode = codeTextarea?.value.trim();
+            const hasLanguage = darkSelect?.value;
+            hasValidInput = hasCode && hasLanguage;
+        }
+        
+        submitButton.disabled = !hasValidInput;
+    }
+    
+    function isValidGitHubUrl(url) {
+        const githubRegex = /^https:\/\/github\.com\/[\w.-]+\/[\w.-]+\/?$/;
+        return githubRegex.test(url);
+    }
+    
+    // Form submission with progress
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Show progress section
+            progressSection.classList.add('active');
+            
+            // Simulate progress steps
+            simulateProgress();
+            
+            // Submit form after delay
+            setTimeout(() => {
+                this.submit();
+            }, 1000);
+        });
+    }
+    
+    function simulateProgress() {
+        const steps = document.querySelectorAll('.progress-step');
+        let currentStep = 0;
+        
+        function nextStep() {
+            if (currentStep < steps.length) {
+                // Mark current step as active
+                steps[currentStep].classList.add('active');
+                
+                // Mark previous step as completed
+                if (currentStep > 0) {
+                    steps[currentStep - 1].classList.remove('active');
+                    steps[currentStep - 1].classList.add('completed');
+                }
+                
+                currentStep++;
+                
+                if (currentStep < steps.length) {
+                    setTimeout(nextStep, 1500);
+                }
+            }
+        }
+        
+        nextStep();
+    }
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="analysis-page">
+    <div class="container">
+        <!-- Analysis Header -->
+        <div class="analysis-header">
+            <h1 class="analysis-title">🔍 AI Code Analysis</h1>
+            <p class="analysis-subtitle">Upload your project for comprehensive AI-powered bug detection and security analysis</p>
+        </div>
+        
+        <!-- Analysis Options -->
+        <div class="analysis-options">
+            <div class="option-card" data-option="github">
+                <div class="option-header">
+                    <div class="option-icon">🔗</div>
+                    <h3 class="option-title">GitHub Repository</h3>
+                </div>
+                <p class="option-description">Analyze a public GitHub repository by providing its URL. Perfect for open-source projects and collaborative development.</p>
+                <ul class="option-features">
+                    <li>Direct repository access</li>
+                    <li>Automatic file discovery</li>
+                    <li>Branch-specific analysis</li>
+                    <li>Real-time updates</li>
+                </ul>
+            </div>
+            
+            <div class="option-card" data-option="upload">
+                <div class="option-header">
+                    <div class="option-icon">📁</div>
+                    <h3 class="option-title">Upload ZIP File</h3>
+                </div>
+                <p class="option-description">Upload a ZIP file containing your project. Ideal for private repositories and local development projects.</p>
+                <ul class="option-features">
+                    <li>Private project support</li>
+                    <li>Drag & drop interface</li>
+                    <li>Up to 50MB file size</li>
+                    <li>Secure processing</li>
+                </ul>
+            </div>
+            
+            <div class="option-card" data-option="code">
+                <div class="option-header">
+                    <div class="option-icon">💻</div>
+                    <h3 class="option-title">Paste Code</h3>
+                </div>
+                <p class="option-description">Paste your code directly for instant analysis. Great for quick checks and code snippets.</p>
+                <ul class="option-features">
+                    <li>Instant analysis</li>
+                    <li>Multiple languages</li>
+                    <li>Syntax highlighting</li>
+                    <li>Quick feedback</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Analysis Form -->
+        <div class="analysis-form">
+            <form method="post" enctype="multipart/form-data" id="analysis-form" novalidate>
+                {% csrf_token %}
+                
+                <!-- GitHub URL Section -->
+                <div class="form-section hidden" id="github-section">
+                    <h3 class="section-title">
+                        <span class="section-icon">🔗</span>
+                        GitHub Repository URL
+                    </h3>
+                    <div class="url-input">
+                        <input type="url" name="github_url" placeholder="https://github.com/username/repository" id="{{ form.github_url.id_for_label }}">
+                    </div>
+                    <div class="error-message" id="github-url-error"></div>
+                    <p style="color: var(--text-muted); font-size: 0.875rem; margin-top: var(--space-sm);">Enter the URL of a public GitHub repository to analyze</p>
+                </div>
+                
+                <!-- ZIP Upload Section -->
+                <div class="form-section hidden" id="upload-section">
+                    <h3 class="section-title">
+                        <span class="section-icon">📁</span>
+                        Upload Project ZIP
+                    </h3>
+                    <div class="upload-area">
+                        <div class="upload-icon">📁</div>
+                        <div class="upload-text">Drag & drop your ZIP file here</div>
+                        <div class="upload-hint">or click to browse files</div>
+                        <button type="button" class="upload-button">
+                            📂 Choose File
+                        </button>
+                        <input type="file" name="zip_file" accept=".zip" class="file-input" id="{{ form.zip_file.id_for_label }}">
+                    </div>
+                    <div class="file-selected" style="display: none;">
+                        <div class="file-info">
+                            <div class="file-name">filename.zip</div>
+                            <div class="file-size">0 MB</div>
+                        </div>
+                        <button type="button" class="file-remove">×</button>
+                    </div>
+                    <div class="error-message" id="zip-file-error"></div>
+                </div>
+                
+                <!-- Code Input Section -->
+                <div class="form-section hidden" id="code-section">
+                    <h3 class="section-title">
+                        <span class="section-icon">💻</span>
+                        Paste Your Code
+                    </h3>
+                    <div class="code-input">
+                        <textarea name="code_input" placeholder="Paste your code here..." id="{{ form.code_input.id_for_label }}"></textarea>
+                    </div>
+                    <div class="language-select" style="display: none;">
+                        <div class="dark-select">
+                            <select name="language" id="{{ form.language.id_for_label }}" aria-label="Select Programming Language">
+                                <option value="">Select Programming Language</option>
+                                <option value="python">🐍 Python</option>
+                                <option value="javascript">🟨 JavaScript</option>
+                                <option value="typescript">🔷 TypeScript</option>
+                                <option value="java">☕ Java</option>
+                                <option value="go">🐹 Go</option>
+                                <option value="cpp">⚙️ C/C++</option>
+                                <option value="ruby">💎 Ruby</option>
+                                <option value="php">🐘 PHP</option>
+                                <option value="rust">🦀 Rust</option>
+                                <option value="kotlin">🎯 Kotlin</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="error-message" id="code-input-error"></div>
+                </div>
+                
+                {% if form.non_field_errors %}
+                    <div class="error-message" style="margin-bottom: var(--space-md);">
+                        {{ form.non_field_errors.0 }}
+                    </div>
+                {% endif %}
+                
+                <div class="submit-section">
+                    <button type="submit" class="btn btn-primary btn-large submit-button" disabled>
+                        🚀 Start AI Analysis
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Progress Section -->
+        <div class="progress-section">
+            <div class="progress-header">
+                <h3 class="progress-title">🤖 AI Analysis in Progress</h3>
+                <p style="color: var(--text-muted); margin: 0;">Please wait while we analyze your code...</p>
+            </div>
+            
+            <div class="progress-steps">
+                <div class="progress-step">
+                    <div class="step-icon">📥</div>
+                    <div class="step-content">
+                        <div class="step-title">Downloading & Extracting</div>
+                        <div class="step-description">Fetching your project files and preparing for analysis</div>
+                    </div>
+                </div>
+                
+                <div class="progress-step">
+                    <div class="step-icon">📂</div>
+                    <div class="step-content">
+                        <div class="step-title">Collecting Code Files</div>
+                        <div class="step-description">Identifying and organizing source code files</div>
+                    </div>
+                </div>
+                
+                <div class="progress-step">
+                    <div class="step-icon">🤖</div>
+                    <div class="step-content">
+                        <div class="step-title">AI Analysis</div>
+                        <div class="step-description">Running comprehensive code analysis with Gemini AI</div>
+                    </div>
+                </div>
+                
+                <div class="progress-step">
+                    <div class="step-icon">📈</div>
+                    <div class="step-content">
+                        <div class="step-title">Generating Report</div>
+                        <div class="step-description">Compiling findings and creating detailed report</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="progress-note">
+                📝 <strong>Note:</strong> Analysis typically takes 2-5 minutes depending on project size. You'll be redirected to results automatically.
+            </div>
+        </div>
+        
+        <!-- Info Section -->
+        <div class="info-section">
+            <div class="info-grid">
+                <div class="info-card">
+                    <h4>🔍 What We Analyze</h4>
+                    <ul class="info-list">
+                        <li><strong>Bugs:</strong> Logic errors, potential crashes, runtime issues</li>
+                        <li><strong>Security:</strong> Vulnerabilities, injection flaws, unsafe practices</li>
+                        <li><strong>Code Quality:</strong> Code smells, bad practices, maintainability</li>
+                        <li><strong>Performance:</strong> Optimization opportunities and bottlenecks</li>
+                        <li><strong>Best Practices:</strong> Industry standards and conventions</li>
+                    </ul>
+                </div>
+                
+                <div class="info-card">
+                    <h4>🚀 Supported Languages</h4>
+                    <div class="language-tags">
+                        <span class="language-tag">Python</span>
+                        <span class="language-tag">JavaScript</span>
+                        <span class="language-tag">TypeScript</span>
+                        <span class="language-tag">Java</span>
+                        <span class="language-tag">Go</span>
+                        <span class="language-tag">C/C++</span>
+                        <span class="language-tag">Ruby</span>
+                        <span class="language-tag">PHP</span>
+                        <span class="language-tag">Rust</span>
+                        <span class="language-tag">Kotlin</span>
+                        <span class="language-tag">Scala</span>
+                        <span class="language-tag">C#</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

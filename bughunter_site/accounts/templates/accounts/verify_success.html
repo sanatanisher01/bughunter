@@ -1,0 +1,17 @@
+{% extends 'accounts/base.html' %}
+
+{% block title %}Email Verified - BugHunter{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card success-card">
+        <div class="success-icon">✅</div>
+        <h2>Email Verified!</h2>
+        <p>Your email has been successfully verified. You can now log in to your BugHunter account.</p>
+        
+        <div class="auth-actions">
+            <a href="{% url 'login' %}" class="btn btn-primary">Login Now</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

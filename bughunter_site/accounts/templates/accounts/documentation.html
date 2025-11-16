@@ -1,0 +1,613 @@
+{% extends 'accounts/base.html' %}
+
+{% block title %}Documentation - BugHunter{% endblock %}
+
+{% block extra_css %}
+<style>
+.docs-page {
+    padding: var(--space-xl) 0;
+    min-height: calc(100vh - 72px);
+}
+
+.docs-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: var(--space-2xl);
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.docs-sidebar {
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    padding: var(--space-lg);
+    height: fit-content;
+    position: sticky;
+    top: 100px;
+}
+
+.docs-nav {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.docs-nav-item {
+    margin-bottom: var(--space-xs);
+}
+
+.docs-nav-link {
+    display: block;
+    padding: var(--space-sm);
+    color: var(--text-muted);
+    text-decoration: none;
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    transition: all var(--transition-fast);
+}
+
+.docs-nav-link:hover,
+.docs-nav-link.active {
+    background: var(--bg-soft);
+    color: var(--text-primary);
+}
+
+.docs-content {
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    padding: var(--space-2xl);
+}
+
+.docs-header {
+    margin-bottom: var(--space-2xl);
+    text-align: center;
+}
+
+.docs-title {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 700;
+    margin-bottom: var(--space-sm);
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.docs-section {
+    margin-bottom: var(--space-2xl);
+    scroll-margin-top: 100px;
+}
+
+.docs-section h2 {
+    color: var(--text-primary);
+    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-sm);
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.docs-section h3 {
+    color: var(--text-primary);
+    margin: var(--space-lg) 0 var(--space-md) 0;
+}
+
+.docs-section p {
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: var(--space-md);
+}
+
+.docs-section ul,
+.docs-section ol {
+    color: var(--text-secondary);
+    margin-bottom: var(--space-md);
+    padding-left: var(--space-lg);
+}
+
+.docs-section li {
+    margin-bottom: var(--space-xs);
+    line-height: 1.6;
+}
+
+.code-block {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: var(--space-md);
+    margin: var(--space-md) 0;
+    overflow-x: auto;
+}
+
+.code-block pre {
+    margin: 0;
+    font-family: var(--font-code);
+    font-size: 0.875rem;
+    color: var(--text-primary);
+}
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--space-lg);
+    margin: var(--space-lg) 0;
+}
+
+.feature-card {
+    background: var(--bg-soft);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: var(--space-lg);
+}
+
+.feature-card h4 {
+    color: var(--text-primary);
+    margin-bottom: var(--space-sm);
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.step-list {
+    counter-reset: step-counter;
+    list-style: none;
+    padding: 0;
+}
+
+.step-list li {
+    counter-increment: step-counter;
+    background: var(--bg-soft);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: var(--space-md);
+    margin-bottom: var(--space-md);
+    position: relative;
+    padding-left: 3rem;
+}
+
+.step-list li::before {
+    content: counter(step-counter);
+    position: absolute;
+    left: var(--space-md);
+    top: var(--space-md);
+    background: var(--primary-gradient);
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.api-endpoint {
+    background: var(--bg-soft);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: var(--space-md);
+    margin: var(--space-md) 0;
+}
+
+.api-method {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-right: var(--space-sm);
+}
+
+.api-method.post {
+    background: var(--success);
+    color: white;
+}
+
+.api-method.get {
+    background: var(--info);
+    color: white;
+}
+
+@media (max-width: 1024px) {
+    .docs-layout {
+        grid-template-columns: 1fr;
+        gap: var(--space-lg);
+    }
+    
+    .docs-sidebar {
+        position: static;
+        order: 2;
+    }
+}
+
+@media (max-width: 768px) {
+    .docs-content {
+        padding: var(--space-lg);
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="docs-page">
+    <div class="container">
+        <div class="docs-layout">
+            <!-- Sidebar Navigation -->
+            <div class="docs-sidebar">
+                <nav>
+                    <ul class="docs-nav">
+                        <li class="docs-nav-item">
+                            <a href="#overview" class="docs-nav-link active">Overview</a>
+                        </li>
+                        <li class="docs-nav-item">
+                            <a href="#getting-started" class="docs-nav-link">Getting Started</a>
+                        </li>
+                        <li class="docs-nav-item">
+                            <a href="#features" class="docs-nav-link">Features</a>
+                        </li>
+                        <li class="docs-nav-item">
+                            <a href="#analysis-types" class="docs-nav-link">Analysis Types</a>
+                        </li>
+                        <li class="docs-nav-item">
+                            <a href="#supported-languages" class="docs-nav-link">Supported Languages</a>
+                        </li>
+                        <li class="docs-nav-item">
+                            <a href="#api-setup" class="docs-nav-link">API Setup</a>
+                        </li>
+                        <li class="docs-nav-item">
+                            <a href="#understanding-results" class="docs-nav-link">Understanding Results</a>
+                        </li>
+                        <li class="docs-nav-item">
+                            <a href="#best-practices" class="docs-nav-link">Best Practices</a>
+                        </li>
+                        <li class="docs-nav-item">
+                            <a href="#troubleshooting" class="docs-nav-link">Troubleshooting</a>
+                        </li>
+                        <li class="docs-nav-item">
+                            <a href="#faq" class="docs-nav-link">FAQ</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+
+            <!-- Main Content -->
+            <div class="docs-content">
+                <div class="docs-header">
+                    <h1 class="docs-title">🐛 BugHunter Documentation</h1>
+                    <p>Complete guide to AI-powered code analysis and security auditing</p>
+                </div>
+
+                <!-- Overview -->
+                <section id="overview" class="docs-section">
+                    <h2>Overview</h2>
+                    <p>BugHunter is an AI-powered code analysis platform that uses Google's Gemini AI to detect bugs, security vulnerabilities, and code quality issues in your projects. Our platform supports multiple programming languages and provides detailed, actionable insights to improve your code quality.</p>
+                    
+                    <h3>Key Benefits</h3>
+                    <ul>
+                        <li><strong>AI-Powered Analysis:</strong> Leverages Google Gemini AI for intelligent code review</li>
+                        <li><strong>Multi-Language Support:</strong> Supports 15+ programming languages</li>
+                        <li><strong>Comprehensive Reports:</strong> Detailed findings with fix suggestions</li>
+                        <li><strong>Security Focus:</strong> Identifies vulnerabilities and unsafe practices</li>
+                        <li><strong>User-Friendly:</strong> Clean, intuitive interface with VS Code-style results</li>
+                    </ul>
+                </section>
+
+                <!-- Getting Started -->
+                <section id="getting-started" class="docs-section">
+                    <h2>Getting Started</h2>
+                    <p>Follow these steps to start analyzing your code with BugHunter:</p>
+                    
+                    <ol class="step-list">
+                        <li>
+                            <strong>Create Account:</strong> Sign up with your email and verify your account through the verification link sent to your email.
+                        </li>
+                        <li>
+                            <strong>Get Gemini API Key:</strong> Visit <a href="https://makersuite.google.com/app/apikey" target="_blank">Google AI Studio</a> and create your free API key.
+                        </li>
+                        <li>
+                            <strong>Add API Key:</strong> In your dashboard, click "Add API Key" and paste your Gemini API key.
+                        </li>
+                        <li>
+                            <strong>Start Analysis:</strong> Choose from GitHub URL, ZIP upload, or direct code paste to begin analysis.
+                        </li>
+                        <li>
+                            <strong>Review Results:</strong> Examine the detailed findings and implement suggested fixes.
+                        </li>
+                    </ol>
+                </section>
+
+                <!-- Features -->
+                <section id="features" class="docs-section">
+                    <h2>Features</h2>
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h4>🔍 Smart Bug Detection</h4>
+                            <p>Identifies logic errors, potential crashes, and runtime issues with AI-powered analysis that understands context and intent.</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4>🔒 Security Scanning</h4>
+                            <p>Detects injection flaws, unsafe practices, and security vulnerabilities before they reach production.</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4>🧹 Code Quality Analysis</h4>
+                            <p>Finds code smells, bad practices, and improvement opportunities to maintain clean, maintainable code.</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4>💡 AI Suggestions</h4>
+                            <p>Get intelligent recommendations and fixed code examples with detailed explanations.</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4>📈 Detailed Reports</h4>
+                            <p>Comprehensive analysis reports with severity levels, line-by-line feedback, and actionable insights.</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4>🌐 Language Detection</h4>
+                            <p>Automatic programming language detection with mismatch warnings for accurate analysis.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Analysis Types -->
+                <section id="analysis-types" class="docs-section">
+                    <h2>Analysis Types</h2>
+                    
+                    <h3>🔗 GitHub Repository Analysis</h3>
+                    <p>Analyze public GitHub repositories by providing the repository URL. Perfect for open-source projects and collaborative development.</p>
+                    <div class="code-block">
+                        <pre>Example: https://github.com/username/repository</pre>
+                    </div>
+                    
+                    <h3>📁 ZIP File Upload</h3>
+                    <p>Upload a ZIP file containing your project (up to 50MB). Ideal for private repositories and local development projects.</p>
+                    <ul>
+                        <li>Supports drag & drop interface</li>
+                        <li>Maximum file size: 50MB</li>
+                        <li>Secure processing and automatic cleanup</li>
+                    </ul>
+                    
+                    <h3>💻 Direct Code Input</h3>
+                    <p>Paste your code directly for instant analysis. Great for quick checks and code snippets.</p>
+                    <ul>
+                        <li>Instant analysis with language detection</li>
+                        <li>Syntax highlighting support</li>
+                        <li>Language mismatch warnings</li>
+                    </ul>
+                </section>
+
+                <!-- Supported Languages -->
+                <section id="supported-languages" class="docs-section">
+                    <h2>Supported Languages</h2>
+                    <p>BugHunter supports analysis for the following programming languages:</p>
+                    
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h4>🐍 Python</h4>
+                            <p>Complete support for Python 3.x with framework detection</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4>🟨 JavaScript</h4>
+                            <p>ES6+ support with Node.js and browser environment detection</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4>🔷 TypeScript</h4>
+                            <p>Full TypeScript support with type checking analysis</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4>☕ Java</h4>
+                            <p>Java 8+ support with Spring framework detection</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4>🐹 Go</h4>
+                            <p>Modern Go analysis with concurrency pattern detection</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4>⚙️ C/C++</h4>
+                            <p>C and C++ analysis with memory safety checks</p>
+                        </div>
+                    </div>
+                    
+                    <p><strong>Additional Languages:</strong> Ruby, PHP, Rust, Kotlin, Scala, C#, SQL, Shell/Bash</p>
+                </section>
+
+                <!-- API Setup -->
+                <section id="api-setup" class="docs-section">
+                    <h2>API Setup</h2>
+                    <p>BugHunter requires your own Google Gemini API key for analysis. This ensures you have full control over your API usage and costs.</p>
+                    
+                    <h3>Getting Your API Key</h3>
+                    <ol class="step-list">
+                        <li>Visit <a href="https://makersuite.google.com/app/apikey" target="_blank">Google AI Studio</a></li>
+                        <li>Sign in with your Google account</li>
+                        <li>Click "Create API Key"</li>
+                        <li>Copy the generated key</li>
+                        <li>Add it to your BugHunter dashboard</li>
+                    </ol>
+                    
+                    <h3>API Key Security</h3>
+                    <ul>
+                        <li>Your API key is stored securely and encrypted</li>
+                        <li>Only you have access to your API key</li>
+                        <li>You can update or remove your API key anytime</li>
+                        <li>API usage is tracked by Google, not BugHunter</li>
+                    </ul>
+                </section>
+
+                <!-- Understanding Results -->
+                <section id="understanding-results" class="docs-section">
+                    <h2>Understanding Results</h2>
+                    <p>BugHunter provides comprehensive analysis results categorized into different types of findings:</p>
+                    
+                    <h3>🐛 Bugs</h3>
+                    <p>Logic errors, potential crashes, and runtime issues that could cause your application to malfunction or behave unexpectedly.</p>
+                    <ul>
+                        <li><strong>Critical:</strong> Issues that will cause crashes or data loss</li>
+                        <li><strong>High:</strong> Significant logic errors affecting functionality</li>
+                        <li><strong>Medium:</strong> Potential issues that may cause problems</li>
+                        <li><strong>Low:</strong> Minor issues with simple fixes</li>
+                    </ul>
+                    
+                    <h3>🔒 Security Vulnerabilities</h3>
+                    <p>Security flaws, injection vulnerabilities, and unsafe practices that could be exploited by attackers.</p>
+                    <ul>
+                        <li>SQL Injection vulnerabilities</li>
+                        <li>Cross-site scripting (XSS) issues</li>
+                        <li>Insecure data handling</li>
+                        <li>Authentication and authorization flaws</li>
+                    </ul>
+                    
+                    <h3>🧹 Code Smells</h3>
+                    <p>Code quality issues, bad practices, and design problems that make code harder to read, understand, and modify.</p>
+                    <ul>
+                        <li>Duplicate code patterns</li>
+                        <li>Complex functions and classes</li>
+                        <li>Poor naming conventions</li>
+                        <li>Maintainability issues</li>
+                    </ul>
+                    
+                    <h3>Quality Score Calculation</h3>
+                    <div class="code-block">
+                        <pre>Quality Score = 100 - (Bugs×2 + Security×3 + Code Smells×0.5)</pre>
+                    </div>
+                </section>
+
+                <!-- Best Practices -->
+                <section id="best-practices" class="docs-section">
+                    <h2>Best Practices</h2>
+                    
+                    <h3>Before Analysis</h3>
+                    <ul>
+                        <li>Ensure your code is properly formatted and commented</li>
+                        <li>Remove sensitive information (API keys, passwords, etc.)</li>
+                        <li>Select the correct programming language for accurate analysis</li>
+                        <li>Keep file sizes reasonable (under 50MB for ZIP uploads)</li>
+                    </ul>
+                    
+                    <h3>Interpreting Results</h3>
+                    <ul>
+                        <li>Focus on Critical and High severity issues first</li>
+                        <li>Review security vulnerabilities immediately</li>
+                        <li>Use suggested fixes as guidance, not absolute rules</li>
+                        <li>Consider the context of your specific application</li>
+                    </ul>
+                    
+                    <h3>Regular Analysis</h3>
+                    <ul>
+                        <li>Run analysis on major code changes</li>
+                        <li>Integrate into your development workflow</li>
+                        <li>Track improvements over time</li>
+                        <li>Share results with your development team</li>
+                    </ul>
+                </section>
+
+                <!-- Troubleshooting -->
+                <section id="troubleshooting" class="docs-section">
+                    <h2>Troubleshooting</h2>
+                    
+                    <h3>Common Issues</h3>
+                    
+                    <h4>Analysis Failed</h4>
+                    <ul>
+                        <li>Check if your Gemini API key is valid and has quota remaining</li>
+                        <li>Ensure the repository URL is public and accessible</li>
+                        <li>Verify ZIP file is not corrupted and under 50MB</li>
+                        <li>Make sure the project contains supported file types</li>
+                    </ul>
+                    
+                    <h4>No Results Returned</h4>
+                    <ul>
+                        <li>Check if the project contains code files (not just documentation)</li>
+                        <li>Verify the selected programming language matches your code</li>
+                        <li>Ensure files have proper extensions (.py, .js, .java, etc.)</li>
+                    </ul>
+                    
+                    <h4>Language Mismatch Warnings</h4>
+                    <ul>
+                        <li>Review the detected language and update your selection</li>
+                        <li>Check if your code contains mixed languages</li>
+                        <li>Ensure proper file extensions are used</li>
+                    </ul>
+                </section>
+
+                <!-- FAQ -->
+                <section id="faq" class="docs-section">
+                    <h2>Frequently Asked Questions</h2>
+                    
+                    <h3>Is my code secure?</h3>
+                    <p>Yes, your code is processed securely. We don't store your code permanently, and all analysis is done using your own Gemini API key. Temporary files are automatically cleaned up after analysis.</p>
+                    
+                    <h3>How accurate is the AI analysis?</h3>
+                    <p>Our AI analysis using Google Gemini has a 99.9% accuracy rate for detecting common issues. However, always review suggestions in the context of your specific application requirements.</p>
+                    
+                    <h3>What's the cost of using BugHunter?</h3>
+                    <p>BugHunter is free to use. You only pay for your Google Gemini API usage, which is typically very affordable for most projects. Check Google's pricing for current rates.</p>
+                    
+                    <h3>Can I analyze private repositories?</h3>
+                    <p>Yes, you can analyze private repositories by uploading them as ZIP files. We don't have access to your private GitHub repositories directly.</p>
+                    
+                    <h3>How long does analysis take?</h3>
+                    <p>Analysis typically takes 2-5 minutes depending on project size. Larger projects may take longer, but you'll see real-time progress updates.</p>
+                    
+                    <h3>Can I export the results?</h3>
+                    <p>Yes, you can export analysis results as PDF reports using the "Export Report" button on the results page.</p>
+                </section>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Smooth scrolling for navigation links
+document.addEventListener('DOMContentLoaded', function() {
+    const navLinks = document.querySelectorAll('.docs-nav-link');
+    
+    navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Remove active class from all links
+            navLinks.forEach(l => l.classList.remove('active'));
+            
+            // Add active class to clicked link
+            this.classList.add('active');
+            
+            // Smooth scroll to target
+            const targetId = this.getAttribute('href').substring(1);
+            const targetElement = document.getElementById(targetId);
+            
+            if (targetElement) {
+                targetElement.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+    
+    // Update active link on scroll
+    const sections = document.querySelectorAll('.docs-section');
+    
+    window.addEventListener('scroll', function() {
+        let current = '';
+        
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop - 120;
+            const sectionHeight = section.offsetHeight;
+            
+            if (window.scrollY >= sectionTop && window.scrollY < sectionTop + sectionHeight) {
+                current = section.getAttribute('id');
+            }
+        });
+        
+        navLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === '#' + current) {
+                link.classList.add('active');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

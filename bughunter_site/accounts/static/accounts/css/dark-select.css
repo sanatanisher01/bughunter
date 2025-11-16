@@ -1,0 +1,189 @@
+/* Dark Theme Select Dropdown - Cross-Browser Compatible */
+
+/* Base select styling */
+.dark-select {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+.dark-select select {
+    width: 100%;
+    padding: 12px 40px 12px 16px;
+    background-color: #0F172A;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    color: #FFFFFF;
+    font-size: 16px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    
+    /* Remove default styling */
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    
+    /* Custom arrow */
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+}
+
+.dark-select select:hover {
+    background-color: #1E293B;
+    border-color: #7B5CFF;
+}
+
+.dark-select select:focus {
+    outline: none;
+    background-color: #1E293B;
+    border-color: #7B5CFF;
+    box-shadow: 0 0 0 3px rgba(123, 92, 255, 0.1);
+}
+
+/* Option styling - works in most browsers */
+.dark-select select option {
+    background-color: #0F172A;
+    color: #FFFFFF;
+    padding: 8px 16px;
+    border: none;
+}
+
+.dark-select select option:hover,
+.dark-select select option:focus {
+    background-color: #1E293B !important;
+    color: #FFFFFF !important;
+}
+
+.dark-select select option:checked {
+    background-color: #7B5CFF !important;
+    color: #FFFFFF !important;
+}
+
+.dark-select select option[value=""] {
+    color: #94A3B8;
+}
+
+/* Firefox specific fixes */
+@-moz-document url-prefix() {
+    .dark-select select {
+        background-image: none;
+        padding-right: 16px;
+    }
+    
+    .dark-select::after {
+        content: '▼';
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #FFFFFF;
+        pointer-events: none;
+        font-size: 12px;
+        transition: color 0.3s ease;
+    }
+    
+    .dark-select:hover::after {
+        color: #7B5CFF;
+    }
+}
+
+/* Webkit browsers (Chrome, Safari, Edge) specific */
+@supports (-webkit-appearance: none) {
+    .dark-select select option {
+        background: #0F172A;
+        color: #FFFFFF;
+    }
+    
+    .dark-select select option:hover {
+        background: #1E293B;
+    }
+}
+
+/* Internet Explorer / Edge Legacy fallback */
+@media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {
+    .dark-select select {
+        background-color: #0F172A;
+        color: #FFFFFF;
+        border: 1px solid #334155;
+    }
+    
+    .dark-select select option {
+        background-color: #0F172A;
+        color: #FFFFFF;
+    }
+}
+
+/* Dark scrollbar for dropdown options */
+.dark-select select::-webkit-scrollbar {
+    width: 8px;
+}
+
+.dark-select select::-webkit-scrollbar-track {
+    background: #0F172A;
+    border-radius: 4px;
+}
+
+.dark-select select::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 4px;
+}
+
+.dark-select select::-webkit-scrollbar-thumb:hover {
+    background: #7B5CFF;
+}
+
+/* Focus indicator for accessibility */
+.dark-select select:focus-visible {
+    outline: 2px solid #7B5CFF;
+    outline-offset: 2px;
+}
+
+/* Disabled state */
+.dark-select select:disabled {
+    background-color: #1E293B;
+    color: #64748B;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.dark-select select:disabled option {
+    background-color: #1E293B;
+    color: #64748B;
+}
+
+/* Animation for smooth interactions */
+@keyframes selectFocus {
+    0% { box-shadow: 0 0 0 0 rgba(123, 92, 255, 0.1); }
+    100% { box-shadow: 0 0 0 3px rgba(123, 92, 255, 0.1); }
+}
+
+.dark-select select:focus {
+    animation: selectFocus 0.3s ease-out;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .dark-select select {
+        border-width: 2px;
+        border-color: #FFFFFF;
+    }
+    
+    .dark-select select:focus {
+        border-color: #7B5CFF;
+        box-shadow: 0 0 0 2px #7B5CFF;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .dark-select select {
+        transition: none;
+    }
+    
+    .dark-select select:focus {
+        animation: none;
+    }
+}

@@ -1,0 +1,997 @@
+{% extends 'accounts/base.html' %}
+
+{% block title %}BugHunter - AI-Powered Code Analysis{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Landing Page Specific Styles */
+.landing-page {
+    position: relative;
+    overflow: hidden;
+    background: radial-gradient(circle at 20% 80%, rgba(123, 92, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(183, 33, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(33, 212, 253, 0.1) 0%, transparent 50%);
+}
+
+/* Hero Section */
+.hero-section {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.hero-content {
+    text-align: center;
+    max-width: 800px;
+    padding: 0 var(--space-lg);
+    position: relative;
+    z-index: 10;
+}
+
+.hero-title {
+    font-size: clamp(3rem, 8vw, 6rem);
+    font-weight: 800;
+    margin-bottom: var(--space-lg);
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+}
+
+.hero-subtitle {
+    font-size: clamp(1.25rem, 3vw, 2rem);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-md);
+    font-weight: 600;
+}
+
+.hero-description {
+    font-size: 1.125rem;
+    color: var(--text-muted);
+    margin-bottom: var(--space-xl);
+    line-height: 1.7;
+}
+
+.hero-buttons {
+    display: flex;
+    gap: var(--space-md);
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: var(--space-xl);
+}
+
+.hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-xl);
+    margin-top: var(--space-xl);
+}
+
+.hero-stat {
+    text-align: center;
+}
+
+.hero-stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: block;
+}
+
+.hero-stat-label {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+/* Floating Elements */
+.hero-floating-element {
+    position: absolute;
+    pointer-events: none;
+    opacity: 0.6;
+    transition: transform 0.3s ease;
+}
+
+.floating-1 {
+    top: 20%;
+    left: 10%;
+    font-size: 2rem;
+    animation: float 6s ease-in-out infinite;
+}
+
+.floating-2 {
+    top: 30%;
+    right: 15%;
+    font-size: 1.5rem;
+    animation: float 8s ease-in-out infinite reverse;
+}
+
+.floating-3 {
+    bottom: 30%;
+    left: 15%;
+    font-size: 1.8rem;
+    animation: float 7s ease-in-out infinite;
+}
+
+.floating-4 {
+    bottom: 20%;
+    right: 10%;
+    font-size: 2.2rem;
+    animation: float 9s ease-in-out infinite reverse;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(5deg); }
+}
+
+/* Features Section */
+.features-section {
+    padding: var(--space-2xl) 0;
+    position: relative;
+}
+
+.features-header {
+    text-align: center;
+    margin-bottom: var(--space-2xl);
+}
+
+.features-header h2 {
+    margin-bottom: var(--space-md);
+}
+
+.features-header p {
+    font-size: 1.125rem;
+    color: var(--text-muted);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--space-lg);
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--space-lg);
+}
+
+.feature-card {
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    padding: var(--space-xl);
+    text-align: center;
+    transition: all var(--transition-medium);
+    position: relative;
+    overflow: hidden;
+}
+
+.feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--primary-gradient);
+    transform: scaleX(0);
+    transition: transform var(--transition-medium);
+}
+
+.feature-card:hover::before {
+    transform: scaleX(1);
+}
+
+.feature-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-strong);
+    border-color: var(--border-primary);
+}
+
+.feature-icon {
+    font-size: 3rem;
+    margin-bottom: var(--space-md);
+    display: block;
+}
+
+.feature-card h3 {
+    margin-bottom: var(--space-md);
+    color: var(--text-primary);
+}
+
+.feature-card p {
+    color: var(--text-muted);
+    line-height: 1.6;
+}
+
+/* Explanation Section */
+.explanation-section {
+    padding: var(--space-2xl) 0;
+    background: rgba(123, 92, 255, 0.02);
+    border-top: 1px solid var(--border-subtle);
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.explanation-header {
+    text-align: center;
+    margin-bottom: var(--space-2xl);
+}
+
+.explanation-header h2 {
+    margin-bottom: var(--space-md);
+    color: var(--text-primary);
+}
+
+.explanation-header p {
+    font-size: 1.125rem;
+    color: var(--text-muted);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.explanation-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--space-lg);
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--space-lg);
+}
+
+.explanation-card {
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    padding: var(--space-xl);
+    text-align: center;
+    transition: all var(--transition-medium);
+    position: relative;
+    overflow: hidden;
+}
+
+.explanation-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--primary-gradient);
+    transform: scaleX(0);
+    transition: transform var(--transition-medium);
+}
+
+.explanation-card:hover::before {
+    transform: scaleX(1);
+}
+
+.explanation-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-medium);
+    border-color: var(--border-primary);
+}
+
+.explanation-icon {
+    font-size: 2.5rem;
+    margin-bottom: var(--space-md);
+    display: block;
+}
+
+.explanation-card h3 {
+    margin-bottom: var(--space-md);
+    color: var(--text-primary);
+    font-size: 1.25rem;
+}
+
+.explanation-card p {
+    color: var(--text-muted);
+    line-height: 1.6;
+    font-size: 0.95rem;
+}
+
+/* Metrics Section */
+.metrics-section {
+    padding: var(--space-2xl) 0;
+    border-top: 1px solid var(--border-subtle);
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-lg);
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 var(--space-lg);
+}
+
+.metric-card {
+    text-align: center;
+    padding: var(--space-lg);
+    background: var(--bg-glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    transition: all var(--transition-medium);
+}
+
+.metric-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-medium);
+}
+
+.metric-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: block;
+    margin-bottom: var(--space-xs);
+}
+
+.metric-label {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+/* Testimonials Section */
+.testimonials-section {
+    padding: var(--space-2xl) 0;
+}
+
+.testimonials-header {
+    text-align: center;
+    margin-bottom: var(--space-2xl);
+}
+
+.testimonials-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: var(--space-lg);
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--space-lg);
+}
+
+.testimonial-card {
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    padding: var(--space-xl);
+    transition: all var(--transition-medium);
+}
+
+.testimonial-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-medium);
+}
+
+.testimonial-content {
+    margin-bottom: var(--space-md);
+    font-style: italic;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.testimonial-author {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.testimonial-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--primary-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: white;
+}
+
+.testimonial-info h4 {
+    color: var(--text-primary);
+    margin-bottom: 2px;
+}
+
+.testimonial-info p {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+/* CTA Section */
+.cta-section {
+    padding: var(--space-2xl) 0;
+    text-align: center;
+    background: radial-gradient(circle at 50% 50%, rgba(123, 92, 255, 0.1) 0%, transparent 70%);
+}
+
+.cta-content {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 0 var(--space-lg);
+}
+
+.cta-section h2 {
+    margin-bottom: var(--space-md);
+}
+
+.cta-section p {
+    font-size: 1.125rem;
+    color: var(--text-muted);
+    margin-bottom: var(--space-xl);
+}
+
+/* Team Section */
+.team-section {
+    padding: var(--space-2xl) 0 0 0;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.team-header {
+    text-align: center;
+    margin-bottom: var(--space-2xl);
+}
+
+.team-header h2 {
+    margin-bottom: var(--space-md);
+    color: var(--text-primary);
+}
+
+.team-header p {
+    font-size: 1.125rem;
+    color: var(--text-muted);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--space-xl);
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 var(--space-lg);
+}
+
+.team-card {
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    padding: var(--space-xl);
+    text-align: center;
+    transition: all var(--transition-medium);
+    position: relative;
+    overflow: hidden;
+}
+
+.team-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--primary-gradient);
+    transform: scaleX(0);
+    transition: transform var(--transition-medium);
+}
+
+.team-card:hover::before {
+    transform: scaleX(1);
+}
+
+.team-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-strong);
+    border-color: var(--border-primary);
+}
+
+.team-photo {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto var(--space-lg);
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid transparent;
+    background: var(--primary-gradient);
+    padding: 3px;
+    transition: all var(--transition-medium);
+}
+
+.team-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    background: var(--bg-primary);
+}
+
+.team-card:hover .team-photo {
+    transform: scale(1.05);
+}
+
+.team-info h3 {
+    margin-bottom: var(--space-xs);
+    color: var(--text-primary);
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.team-role {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    margin-bottom: var(--space-md);
+    font-weight: 500;
+}
+
+.team-social {
+    display: flex;
+    gap: var(--space-sm);
+    justify-content: center;
+}
+
+.team-linkedin,
+.team-github,
+.team-email {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    transition: all var(--transition-medium);
+    text-decoration: none;
+}
+
+.team-linkedin {
+    background: rgba(0, 119, 181, 0.1);
+    color: #0077b5;
+}
+
+.team-linkedin:hover {
+    background: #0077b5;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 119, 181, 0.3);
+}
+
+.team-github {
+    background: rgba(51, 51, 51, 0.1);
+    color: #333;
+}
+
+.team-github:hover {
+    background: #333;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(51, 51, 51, 0.3);
+}
+
+.team-email {
+    background: rgba(234, 67, 53, 0.1);
+    color: #ea4335;
+}
+
+.team-email:hover {
+    background: #ea4335;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(234, 67, 53, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hero-stats {
+        flex-direction: column;
+        gap: var(--space-md);
+    }
+    
+    .hero-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .features-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .testimonials-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .hero-floating-element {
+        display: none;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="landing-page" id="landing-orbs">
+    <!-- Hero Section -->
+    <section class="hero-section" id="hero-particles">
+        <!-- Floating Elements -->
+        <div class="hero-floating-element floating-1">🐛</div>
+        <div class="hero-floating-element floating-2">🔒</div>
+        <div class="hero-floating-element floating-3">💡</div>
+        <div class="hero-floating-element floating-4">🧹</div>
+        
+        <div class="hero-content">
+            <h1 class="hero-title text-gradient-animated">🐛 BugHunter</h1>
+            <p class="hero-subtitle">AI-Powered Code Analysis & Security Auditing</p>
+            <p class="hero-description">
+                Transform your code quality with advanced AI technology. Detect bugs, security vulnerabilities, 
+                and code smells instantly using Google's Gemini AI.
+            </p>
+            
+            <div class="hero-buttons">
+                <a href="{% url 'signup' %}" class="btn btn-primary btn-large">
+                    🚀 Start Free Analysis
+                </a>
+                {% if user.is_authenticated %}
+                <a href="{% url 'dashboard' %}" class="btn btn-secondary btn-large">
+                    📊 Dashboard
+                </a>
+                {% else %}
+                <a href="{% url 'login' %}" class="btn btn-secondary btn-large">
+                    🔑 Sign In
+                </a>
+                {% endif %}
+            </div>
+            
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <span class="hero-stat-number">10K+</span>
+                    <span class="hero-stat-label">Files Analyzed</span>
+                </div>
+                <div class="hero-stat">
+                    <span class="hero-stat-number">500+</span>
+                    <span class="hero-stat-label">Bugs Found</span>
+                </div>
+                <div class="hero-stat">
+                    <span class="hero-stat-number">15+</span>
+                    <span class="hero-stat-label">Languages</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section">
+        <div class="container">
+            <div class="features-header">
+                <h2>Powerful AI-Driven Analysis</h2>
+                <p>Comprehensive code review powered by Google's Gemini AI, designed for modern development teams</p>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card card-interactive">
+                    <div class="feature-icon">🔍</div>
+                    <h3>Smart Bug Detection</h3>
+                    <p>Identify potential crashes, logic errors, and runtime issues with AI-powered analysis that understands context and intent.</p>
+                </div>
+                
+                <div class="feature-card card-interactive">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Security Vulnerability Scanning</h3>
+                    <p>Detect injection flaws, unsafe practices, and security vulnerabilities before they reach production.</p>
+                </div>
+                
+                <div class="feature-card card-interactive">
+                    <div class="feature-icon">🧹</div>
+                    <h3>Code Quality Analysis</h3>
+                    <p>Find code smells, bad practices, and improvement opportunities to maintain clean, maintainable code.</p>
+                </div>
+                
+                <div class="feature-card card-interactive">
+                    <div class="feature-icon">💡</div>
+                    <h3>AI-Powered Suggestions</h3>
+                    <p>Get intelligent recommendations and fixed code examples with detailed explanations and best practices.</p>
+                </div>
+                
+                <div class="feature-card card-interactive">
+                    <div class="feature-icon">🚀</div>
+                    <h3>Multi-Language Support</h3>
+                    <p>Analyze Python, JavaScript, TypeScript, Java, Go, C/C++, Ruby, PHP, Rust, Kotlin, and more.</p>
+                </div>
+                
+                <div class="feature-card card-interactive">
+                    <div class="feature-icon">📈</div>
+                    <h3>Detailed Reports</h3>
+                    <p>Comprehensive analysis reports with severity levels, line-by-line feedback, and actionable insights.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Analysis Explanation Section -->
+    <section class="explanation-section">
+        <div class="container">
+            <div class="explanation-header">
+                <h2>Understanding Your Analysis Results</h2>
+                <p>Learn what each metric means and how we calculate your code quality score</p>
+            </div>
+            
+            <div class="explanation-grid">
+                <div class="explanation-card">
+                    <div class="explanation-icon">🐛</div>
+                    <h3>Bugs Found</h3>
+                    <p>Logic errors, potential crashes, and runtime issues that could cause your application to malfunction or behave unexpectedly.</p>
+                </div>
+                
+                <div class="explanation-card">
+                    <div class="explanation-icon">🔒</div>
+                    <h3>Security Issues</h3>
+                    <p>Vulnerabilities like injection flaws, unsafe practices, and security weaknesses that could be exploited by attackers.</p>
+                </div>
+                
+                <div class="explanation-card">
+                    <div class="explanation-icon">🧹</div>
+                    <h3>Code Smells</h3>
+                    <p>Bad practices, maintainability issues, and design problems that make code harder to read, understand, and modify.</p>
+                </div>
+                
+                <div class="explanation-card">
+                    <div class="explanation-icon">✨</div>
+                    <h3>Quality Score</h3>
+                    <p>Overall code health rating (0-100) calculated using: <strong>Score = 100 - (Bugs×2 + Security×3 + Smells×0.5)</strong></p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Metrics Section -->
+    <section class="metrics-section">
+        <div class="container">
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <span class="metric-number">99.9%</span>
+                    <span class="metric-label">Accuracy Rate</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-number">< 2min</span>
+                    <span class="metric-label">Average Analysis</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-number">15+</span>
+                    <span class="metric-label">Languages</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-number">24/7</span>
+                    <span class="metric-label">Availability</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="testimonials-section">
+        <div class="container">
+            <div class="testimonials-header">
+                <h2>Trusted by Developers</h2>
+                <p>See what developers are saying about BugHunter</p>
+            </div>
+            
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        "BugHunter caught several critical security vulnerabilities in our codebase that we completely missed. The AI suggestions are incredibly accurate and helpful."
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">SM</div>
+                        <div class="testimonial-info">
+                            <h4>Sarah Mitchell</h4>
+                            <p>Senior Developer at TechCorp</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        "The code quality analysis helped us refactor our legacy codebase. The detailed reports and fix suggestions saved us weeks of manual review."
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">JD</div>
+                        <div class="testimonial-info">
+                            <h4>James Davis</h4>
+                            <p>Lead Engineer at StartupXYZ</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        "Integration was seamless and the analysis speed is impressive. BugHunter has become an essential part of our development workflow."
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">AL</div>
+                        <div class="testimonial-info">
+                            <h4>Alex Liu</h4>
+                            <p>DevOps Engineer at CloudTech</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="cta-content">
+            <h2>Ready to Transform Your Code Quality?</h2>
+            <p>Join thousands of developers who trust BugHunter for AI-powered code analysis. Start your free analysis today.</p>
+            <a href="{% url 'signup' %}" class="btn btn-primary btn-large">
+                🚀 Get Started Free
+            </a>
+        </div>
+    </section>
+
+    <!-- Team Section -->
+    <section class="team-section">
+        <div class="container">
+            <div class="team-header">
+                <h2>Meet Our Team</h2>
+                <p>The brilliant minds behind BugHunter's AI-powered code analysis</p>
+            </div>
+            
+            <div class="team-grid">
+                <div class="team-card">
+                    <div class="team-photo">
+                        <img src="/static/accounts/images/team/gauri.jpg" alt="Gauri Khandelwal">
+                    </div>
+                    <div class="team-info">
+                        <h3>Gauri Khandelwal</h3>
+                        <p class="team-role">Frontend and UI/UX Developer</p>
+                        <div class="team-social">
+                            <a href="https://www.linkedin.com/in/gauri-khandelwal-8a7200368/" target="_blank" class="team-linkedin">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                                </svg>
+                            </a>
+                            <a href="https://github.com/gaurikh09" target="_blank" class="team-github">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                                </svg>
+                            </a>
+                            <a href="mailto:gauri2006@gmail.com" class="team-email">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="team-card">
+                    <div class="team-photo">
+                        <img src="/static/accounts/images/team/aryan.jpg" alt="Aryan Gupta">
+                    </div>
+                    <div class="team-info">
+                        <h3>Aryan Gupta</h3>
+                        <p class="team-role">Full Stack Developer</p>
+                        <div class="team-social">
+                            <a href="https://www.linkedin.com/in/aryan-gupta-383587315/" target="_blank" class="team-linkedin">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                                </svg>
+                            </a>
+                            <a href="https://github.com/sanatanisher01" target="_blank" class="team-github">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                                </svg>
+                            </a>
+                            <a href="mailto:aryansanatani01@gmail.com" class="team-email">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="team-card">
+                    <div class="team-photo">
+                        <img src="/static/accounts/images/team/ayush.jpg" alt="Ayush Agrawal">
+                    </div>
+                    <div class="team-info">
+                        <h3>Ayush Agrawal</h3>
+                        <p class="team-role">Frontend Developer</p>
+                        <div class="team-social">
+                            <a href="https://www.linkedin.com/in/ayush-agrawal-649329328/" target="_blank" class="team-linkedin">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                                </svg>
+                            </a>
+                            <a href="https://github.com/ayushagrawalgla" target="_blank" class="team-github">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                                </svg>
+                            </a>
+                            <a href="mailto:ayushagrawal6297@gmail.com" class="team-email">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="team-card">
+                    <div class="team-photo">
+                        <img src="/static/accounts/images/team/kratika.jpg" alt="Kratika Rathi">
+                    </div>
+                    <div class="team-info">
+                        <h3>Kratika Rathi</h3>
+                        <p class="team-role">Full Stack Developer</p>
+                        <div class="team-social">
+                            <a href="https://www.linkedin.com/in/kratika-rathi-1b14382b7/" target="_blank" class="team-linkedin">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                                </svg>
+                            </a>
+                            <a href="https://github.com/kratikarathi123" target="_blank" class="team-github">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                                </svg>
+                            </a>
+                            <a href="mailto:rathikratika26@gmail.com" class="team-email">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="team-card">
+                    <div class="team-photo">
+                        <img src="/static/accounts/images/team/devang.jpg" alt="Devang Mittal">
+                    </div>
+                    <div class="team-info">
+                        <h3>Devang Mittal</h3>
+                        <p class="team-role">Backend Developer</p>
+                        <div class="team-social">
+                            <a href="https://www.linkedin.com/in/devang-mittal-7677a3325/" target="_blank" class="team-linkedin">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                                </svg>
+                            </a>
+                            <a href="https://github.com/DevangMittal23" target="_blank" class="team-github">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                                </svg>
+                            </a>
+                            <a href="mailto:mittaldevang0159@gmail.com" class="team-email">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

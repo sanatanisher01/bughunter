@@ -1,0 +1,41 @@
+{% extends 'accounts/emails/base_email.html' %}
+
+{% block title %}Analysis Started - BugHunter{% endblock %}
+
+{% block content %}
+<div class="greeting">
+    Hello {{ user.first_name|default:user.username }}! 👋
+</div>
+
+<div class="message">
+    Great news! We've started analyzing your project and our AI is hard at work examining your code for bugs, security vulnerabilities, and quality improvements.
+</div>
+
+<div class="status-card">
+    <div class="status-icon">🚀</div>
+    <div class="status-title">Analysis In Progress</div>
+    <div class="status-description">
+        Your project "{{ job.project_name }}" is being analyzed by our advanced AI system
+    </div>
+</div>
+
+<div class="message">
+    <strong>What's happening now:</strong>
+    <ul style="margin: 15px 0; padding-left: 20px; color: #4a5568;">
+        <li>🔍 Scanning all supported file types</li>
+        <li>🧠 AI analyzing code patterns and structure</li>
+        <li>🔒 Checking for security vulnerabilities</li>
+        <li>✨ Identifying improvement opportunities</li>
+    </ul>
+</div>
+
+<div style="text-align: center;">
+    <a href="{{ site_url }}/dashboard" class="cta-button">
+        📊 View Dashboard
+    </a>
+</div>
+
+<div class="message" style="font-size: 14px; color: #718096; text-align: center; margin-top: 30px;">
+    We'll send you another email as soon as the analysis is complete. This usually takes 2-5 minutes depending on project size.
+</div>
+{% endblock %}

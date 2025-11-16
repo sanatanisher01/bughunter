@@ -1,0 +1,18 @@
+{% extends 'accounts/base.html' %}
+
+{% block title %}Verification Failed - BugHunter{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card error-card">
+        <div class="error-icon">❌</div>
+        <h2>Verification Failed</h2>
+        <p>The verification link is invalid or has expired. Please try signing up again or contact support.</p>
+        
+        <div class="auth-actions">
+            <a href="{% url 'signup' %}" class="btn btn-primary">Sign Up Again</a>
+            <a href="{% url 'landing' %}" class="btn btn-secondary">Go Home</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

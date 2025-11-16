@@ -1,0 +1,56 @@
+{% extends 'accounts/emails/base_email.html' %}
+
+{% block title %}Verify Your Email - BugHunter{% endblock %}
+
+{% block content %}
+<div class="greeting">
+    Welcome to BugHunter! 🎉
+</div>
+
+<div class="message">
+    Hi {{ user.first_name|default:user.username }}, thank you for joining BugHunter! We're excited to help you analyze and improve your code with AI-powered insights.
+</div>
+
+<div class="status-card">
+    <div class="status-icon">📧</div>
+    <div class="status-title">Verify Your Email Address</div>
+    <div class="status-description">
+        Please click the button below to verify your email address and activate your account
+    </div>
+</div>
+
+<div class="message">
+    <strong>What happens after verification:</strong>
+    <ul style="margin: 15px 0; padding-left: 20px; color: #4a5568;">
+        <li>🔍 <strong>Upload & Analyze:</strong> Submit GitHub repos or ZIP files for analysis</li>
+        <li>🤖 <strong>AI-Powered Reports:</strong> Get detailed bug and security vulnerability reports</li>
+        <li>🛠️ <strong>Smart Fixes:</strong> Receive AI-generated code improvement suggestions</li>
+        <li>📊 <strong>Track Progress:</strong> Monitor your code quality improvements over time</li>
+    </ul>
+</div>
+
+<div style="text-align: center;">
+    <a href="{{ verification_url }}" class="cta-button">
+        ✅ Verify Email Address
+    </a>
+</div>
+
+<div class="message" style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 20px; margin: 20px 0;">
+    <div style="font-size: 18px; margin-bottom: 10px;">⚡ Quick Start Tips:</div>
+    <div style="color: #856404; font-size: 14px;">
+        • <strong>GitHub Integration:</strong> Simply paste any public repository URL<br>
+        • <strong>File Upload:</strong> Drag & drop ZIP files up to 50MB<br>
+        • <strong>Multi-Language:</strong> Supports Python, JavaScript, Java, Go, and 10+ more languages
+    </div>
+</div>
+
+<div class="message" style="font-size: 14px; color: #718096; text-align: center; margin-top: 30px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+    <strong>Security Note:</strong> This verification link will expire in 24 hours for your security.<br>
+    If you didn't create this account, you can safely ignore this email.
+</div>
+
+<div class="message" style="font-size: 12px; color: #adb5bd; text-align: center; margin-top: 20px;">
+    Having trouble with the button? Copy and paste this link into your browser:<br>
+    <a href="{{ verification_url }}" style="color: #7B5CFF; word-break: break-all;">{{ verification_url }}</a>
+</div>
+{% endblock %}

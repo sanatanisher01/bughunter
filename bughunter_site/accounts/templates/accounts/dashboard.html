@@ -1,0 +1,838 @@
+{% extends 'accounts/base.html' %}
+
+{% block title %}Dashboard - BugHunter{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Dashboard Specific Styles */
+.dashboard-page {
+    padding: var(--space-xl) 0;
+    min-height: calc(100vh - 72px);
+}
+
+.dashboard-header {
+    text-align: center;
+    margin-bottom: var(--space-2xl);
+    position: relative;
+}
+
+.dashboard-title {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 700;
+    margin-bottom: var(--space-sm);
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.dashboard-subtitle {
+    color: var(--text-muted);
+    font-size: 1.125rem;
+    margin: 0;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: var(--space-lg);
+    margin-bottom: var(--space-2xl);
+}
+
+.dashboard-card {
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    padding: var(--space-xl);
+    box-shadow: var(--shadow-soft);
+    transition: all var(--transition-medium);
+    position: relative;
+    overflow: hidden;
+}
+
+.dashboard-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--primary-gradient);
+    transform: scaleX(0);
+    transition: transform var(--transition-medium);
+}
+
+.dashboard-card:hover::before {
+    transform: scaleX(1);
+}
+
+.dashboard-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-medium);
+    border-color: var(--border-primary);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+}
+
+.card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    background: var(--primary-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+/* Account Info Card */
+.account-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-sm) 0;
+    border-bottom: 1px solid var(--border-soft);
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    color: var(--text-muted);
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+
+.info-value {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.status-verified {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-xs) var(--space-sm);
+    background: rgba(0, 210, 127, 0.1);
+    color: var(--success);
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+/* Quick Actions Card */
+.quick-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.action-button {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    background: var(--bg-soft);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: all var(--transition-fast);
+    position: relative;
+    overflow: hidden;
+}
+
+.action-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(123, 92, 255, 0.1), transparent);
+    transition: left 0.5s;
+}
+
+.action-button:hover::before {
+    left: 100%;
+}
+
+.action-button:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-soft);
+    border-color: var(--border-primary);
+}
+
+.action-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-sm);
+    background: var(--primary-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    color: white;
+}
+
+.action-content h4 {
+    margin: 0 0 var(--space-xs) 0;
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.action-content p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-lg);
+    margin-bottom: var(--space-2xl);
+}
+
+.stat-card {
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    text-align: center;
+    transition: all var(--transition-medium);
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--primary-gradient);
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-medium);
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: block;
+    margin-bottom: var(--space-xs);
+}
+
+.stat-label {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.stat-icon {
+    font-size: 1.5rem;
+    margin-bottom: var(--space-sm);
+    opacity: 0.7;
+}
+
+/* Recent Jobs Section */
+.recent-jobs {
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    padding: var(--space-xl);
+    box-shadow: var(--shadow-soft);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-md);
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.jobs-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.job-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    background: var(--bg-soft);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+    position: relative;
+    overflow: hidden;
+}
+
+.job-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--primary-gradient);
+}
+
+.job-item:hover {
+    transform: translateX(4px);
+    box-shadow: var(--shadow-soft);
+    border-color: var(--border-primary);
+}
+
+.job-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-elevated);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    border: 1px solid var(--border-subtle);
+}
+
+.job-info {
+    flex: 1;
+}
+
+.job-source {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-xs);
+    font-size: 0.875rem;
+}
+
+.job-meta {
+    display: flex;
+    gap: var(--space-md);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.job-status {
+    padding: 2px var(--space-xs);
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.status-completed {
+    background: rgba(0, 210, 127, 0.1);
+    color: var(--success);
+}
+
+.status-pending {
+    background: rgba(255, 195, 0, 0.1);
+    color: var(--warning);
+}
+
+.status-failed {
+    background: rgba(255, 93, 96, 0.1);
+    color: var(--danger);
+}
+
+.job-actions {
+    display: flex;
+    gap: var(--space-sm);
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: var(--space-2xl);
+    color: var(--text-muted);
+}
+
+.empty-state-icon {
+    font-size: 3rem;
+    margin-bottom: var(--space-md);
+    opacity: 0.5;
+}
+
+.empty-state h3 {
+    color: var(--text-secondary);
+    margin-bottom: var(--space-sm);
+}
+
+.empty-state p {
+    margin-bottom: var(--space-lg);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .job-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-sm);
+    }
+    
+    .job-meta {
+        flex-direction: column;
+        gap: var(--space-xs);
+    }
+    
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-sm);
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .dashboard-card {
+        padding: var(--space-lg);
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-page">
+    <div class="container">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <h1 class="dashboard-title">Welcome back, {{ user.name }}! 👋</h1>
+            <p class="dashboard-subtitle">Your AI-powered code analysis dashboard</p>
+        </div>
+        
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">📁</div>
+                <span class="stat-number">{{ recent_jobs|length|default:"0" }}</span>
+                <span class="stat-label">Total Analyses</span>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🐛</div>
+                <span class="stat-number">{{ total_bugs|default:"0" }}</span>
+                <span class="stat-label">Bugs Found</span>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🔒</div>
+                <span class="stat-number">{{ total_vulnerabilities|default:"0" }}</span>
+                <span class="stat-label">Security Issues</span>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">✨</div>
+                <span class="stat-number">{{ code_quality_score|default:"A+" }}</span>
+                <span class="stat-label">Quality Score</span>
+            </div>
+        </div>
+        
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid">
+            <!-- Account Information -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-icon">👤</div>
+                    <h3 class="card-title">Account Information</h3>
+                </div>
+                <div class="account-info">
+                    <div class="info-item">
+                        <span class="info-label">Username</span>
+                        <span class="info-value">{{ user.username }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Email</span>
+                        <span class="info-value">{{ user.email }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Status</span>
+                        <span class="status-verified">
+                            ✓ Verified
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Member since</span>
+                        <span class="info-value">{{ user.date_joined|date:"M d, Y" }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Gemini API Key -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-icon">🔑</div>
+                    <h3 class="card-title">Gemini API Key</h3>
+                </div>
+                <div class="account-info">
+                    {% if user.gemini_api_key %}
+                    <div class="info-item">
+                        <span class="info-label">Status</span>
+                        <span class="status-verified">
+                            ✓ API Key Configured
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Key</span>
+                        <span class="info-value">{{ user.gemini_api_key|slice:":10" }}...</span>
+                    </div>
+                    <button onclick="showApiKeyModal()" class="btn btn-secondary btn-small" style="margin-top: var(--space-md);">
+                        🔄 Update API Key
+                    </button>
+                    {% else %}
+                    <div class="info-item">
+                        <span class="info-label">Status</span>
+                        <span class="status-verified" style="background: rgba(255, 195, 0, 0.1); color: var(--warning);">
+                            ⚠️ API Key Required
+                        </span>
+                    </div>
+                    <p style="color: var(--text-muted); font-size: 0.875rem; margin: var(--space-md) 0;">
+                        Add your Gemini API key to start analyzing code
+                    </p>
+                    <button onclick="showApiKeyModal()" class="btn btn-primary btn-small">
+                        🔑 Add API Key
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-icon">⚡</div>
+                    <h3 class="card-title">Quick Actions</h3>
+                </div>
+                <div class="quick-actions">
+                    {% if user.gemini_api_key %}
+                    <a href="{% url 'bughunter' %}" class="action-button">
+                        <div class="action-icon">🔍</div>
+                        <div class="action-content">
+                            <h4>Analyze Code</h4>
+                            <p>Upload GitHub repo or ZIP file for AI analysis</p>
+                        </div>
+                    </a>
+                    {% else %}
+                    <div class="action-button" style="opacity: 0.6; cursor: not-allowed;">
+                        <div class="action-icon">🔍</div>
+                        <div class="action-content">
+                            <h4>Analyze Code</h4>
+                            <p>Add Gemini API key to start analyzing</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <a href="{% url 'reports' %}" class="action-button">
+                        <div class="action-icon">📈</div>
+                        <div class="action-content">
+                            <h4>View Reports</h4>
+                            <p>Browse your analysis history and insights</p>
+                        </div>
+                    </a>
+                    <a href="{% url 'settings' %}" class="action-button">
+                        <div class="action-icon">⚙️</div>
+                        <div class="action-content">
+                            <h4>Settings</h4>
+                            <p>Customize your analysis preferences</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Analysis Jobs -->
+        {% if recent_jobs %}
+        <div class="recent-jobs">
+            <div class="section-header">
+                <h3 class="section-title">Recent Analysis Jobs</h3>
+                <a href="{% url 'bughunter' %}" class="btn btn-primary btn-small">
+                    🔍 New Analysis
+                </a>
+            </div>
+            
+            <div class="jobs-list">
+                {% for job in recent_jobs %}
+                <div class="job-item">
+                    <div class="job-icon">
+                        {% if job.github_url %}🔗{% else %}📁{% endif %}
+                    </div>
+                    <div class="job-info">
+                        <div class="job-source">
+                            {% if job.github_url %}
+                                GitHub: {{ job.github_url|truncatechars:40 }}
+                            {% elif job.zip_file %}
+                                ZIP: {{ job.zip_file.name|truncatechars:30 }}
+                            {% else %}
+                                Direct Code Input ({{ job.language|title }})
+                            {% endif %}
+                        </div>
+                        <div class="job-meta">
+                            <span class="job-date">📅 {{ job.created_at|date:"M d, Y H:i" }}</span>
+                            <span class="job-status status-{{ job.status|lower }}">{{ job.status }}</span>
+                        </div>
+                    </div>
+                    <div class="job-actions">
+                        {% if job.status == 'COMPLETED' %}
+                            <a href="{% url 'bughunter_results' job.id %}" class="btn btn-secondary btn-small">
+                                🔍 View Results
+                            </a>
+                        {% elif job.status == 'PENDING' %}
+                            <span class="btn btn-secondary btn-small" style="opacity: 0.6; cursor: not-allowed;">
+                                ⏳ Processing...
+                            </span>
+                        {% else %}
+                            <span class="btn btn-secondary btn-small" style="opacity: 0.6; cursor: not-allowed;">
+                                ❌ Failed
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% else %}
+        <div class="recent-jobs">
+            <div class="empty-state">
+                <div class="empty-state-icon">🔍</div>
+                <h3>No analyses yet</h3>
+                <p>Start your first code analysis to see results here</p>
+                <a href="{% url 'bughunter' %}" class="btn btn-primary btn-large">
+                    🚀 Start First Analysis
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- API Key Modal -->
+<div id="apiKeyModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>🔑 Gemini API Key</h3>
+            <button onclick="hideApiKeyModal()" class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>Enter your Google Gemini API key to enable code analysis:</p>
+            <form id="apiKeyForm" method="post" action="{% url 'update_api_key' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="api_key">API Key:</label>
+                    <input type="password" id="api_key" name="api_key" class="form-control" 
+                           placeholder="Enter your Gemini API key" value="{{ user.gemini_api_key|default:'' }}" required>
+                </div>
+                <div class="form-actions">
+                    <button type="button" onclick="hideApiKeyModal()" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save API Key</button>
+                </div>
+            </form>
+            <div class="api-key-help">
+                <p><strong>How to get your Gemini API key:</strong></p>
+                <ol>
+                    <li>Visit <a href="https://makersuite.google.com/app/apikey" target="_blank">Google AI Studio</a></li>
+                    <li>Sign in with your Google account</li>
+                    <li>Click "Create API Key"</li>
+                    <li>Copy the generated key and paste it above</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: var(--bg-card);
+    border-radius: var(--radius-xl);
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-strong);
+    border: 1px solid var(--border-subtle);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-lg);
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all var(--transition-fast);
+}
+
+.modal-close:hover {
+    background: var(--bg-soft);
+    color: var(--text-primary);
+}
+
+.modal-body {
+    padding: var(--space-lg);
+}
+
+.form-group {
+    margin-bottom: var(--space-md);
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: var(--space-xs);
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.form-control {
+    width: 100%;
+    padding: var(--space-sm);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    transition: all var(--transition-fast);
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(123, 92, 255, 0.1);
+}
+
+.form-actions {
+    display: flex;
+    gap: var(--space-sm);
+    justify-content: flex-end;
+    margin-top: var(--space-lg);
+}
+
+.api-key-help {
+    margin-top: var(--space-lg);
+    padding: var(--space-md);
+    background: var(--bg-soft);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-subtle);
+}
+
+.api-key-help p {
+    margin: 0 0 var(--space-sm) 0;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+}
+
+.api-key-help ol {
+    margin: 0;
+    padding-left: var(--space-lg);
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+.api-key-help a {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+.api-key-help a:hover {
+    text-decoration: underline;
+}
+</style>
+
+<script>
+function showApiKeyModal() {
+    document.getElementById('apiKeyModal').style.display = 'flex';
+}
+
+function hideApiKeyModal() {
+    document.getElementById('apiKeyModal').style.display = 'none';
+}
+
+// Close modal when clicking outside
+document.getElementById('apiKeyModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        hideApiKeyModal();
+    }
+});
+</script>
+{% endblock %}

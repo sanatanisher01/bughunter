@@ -1,0 +1,81 @@
+{% extends 'accounts/emails/base_email.html' %}
+
+{% block title %}Analysis Complete - BugHunter{% endblock %}
+
+{% block content %}
+<div class="greeting">
+    Excellent! Your analysis is complete 🎉
+</div>
+
+<div class="message">
+    Hi {{ user.first_name|default:user.username }}, we've finished analyzing your project "{{ job.project_name }}" and the results are ready for review.
+</div>
+
+<div class="status-card">
+    <div class="status-icon">✅</div>
+    <div class="status-title">Analysis Complete</div>
+    <div class="status-description">
+        Your comprehensive code analysis report is now available
+    </div>
+</div>
+
+{% if results_summary %}
+<div class="stats-grid">
+    {% if results_summary.total_files %}
+    <div class="stat-item">
+        <span class="stat-number">{{ results_summary.total_files }}</span>
+        <span class="stat-label">Files Analyzed</span>
+    </div>
+    {% endif %}
+    
+    {% if results_summary.bugs_count %}
+    <div class="stat-item">
+        <span class="stat-number" style="color: #e53e3e;">{{ results_summary.bugs_count }}</span>
+        <span class="stat-label">Bugs Found</span>
+    </div>
+    {% endif %}
+    
+    {% if results_summary.security_count %}
+    <div class="stat-item">
+        <span class="stat-number" style="color: #d69e2e;">{{ results_summary.security_count }}</span>
+        <span class="stat-label">Security Issues</span>
+    </div>
+    {% endif %}
+    
+    {% if results_summary.quality_count %}
+    <div class="stat-item">
+        <span class="stat-number" style="color: #3182ce;">{{ results_summary.quality_count }}</span>
+        <span class="stat-label">Quality Issues</span>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<div class="message">
+    <strong>Your report includes:</strong>
+    <ul style="margin: 15px 0; padding-left: 20px; color: #4a5568;">
+        <li>🐛 <strong>Bug Detection:</strong> Logic errors and potential crashes</li>
+        <li>🔒 <strong>Security Analysis:</strong> Vulnerabilities and unsafe practices</li>
+        <li>✨ <strong>Code Quality:</strong> Best practices and improvement suggestions</li>
+        <li>🔧 <strong>Fix Recommendations:</strong> AI-powered solutions with code examples</li>
+    </ul>
+</div>
+
+<div style="text-align: center;">
+    <a href="{{ site_url }}/bughunter/result/{{ job.id }}" class="cta-button">
+        🔍 View Full Report
+    </a>
+</div>
+
+{% if results_summary.total_issues == 0 %}
+<div class="message" style="background: #f0fff4; border: 1px solid #9ae6b4; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center;">
+    <div style="font-size: 24px; margin-bottom: 10px;">🏆</div>
+    <strong style="color: #2f855a;">Congratulations!</strong><br>
+    <span style="color: #38a169;">No significant issues were found in your code. Excellent work!</span>
+</div>
+{% endif %}
+
+<div class="message" style="font-size: 14px; color: #718096; text-align: center; margin-top: 30px;">
+    Questions about your results? Our AI-powered suggestions include detailed explanations and fix examples to help you improve your code.
+</div>
+{% endblock %}

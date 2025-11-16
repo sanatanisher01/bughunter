@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}BugHunter{% endblock %}</title>
+    <meta name="description" content="AI-powered code analysis and security auditing platform">
+    
+    {% load static %}
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="{% static 'accounts/css/premium-theme.css' %}">
+    {% block extra_css %}{% endblock %}
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐛</text></svg>">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{% url 'landing' %}" class="nav-logo">
+                🐛 BugHunter
+            </a>
+            
+            <div class="nav-links">
+                {% if user.is_authenticated and user.is_verified %}
+                    <a href="{% url 'dashboard' %}">Dashboard</a>
+                    <a href="{% url 'bughunter' %}">Analyze</a>
+                    <div class="nav-user">{{ user.name }}</div>
+                    <button class="theme-toggle" title="Toggle theme">🌙</button>
+                    <a href="{% url 'logout' %}" class="btn btn-secondary btn-small">Logout</a>
+                {% else %}
+                    <a href="{% url 'landing' %}">Home</a>
+                    <a href="{% url 'login' %}">Login</a>
+                    <button class="theme-toggle" title="Toggle theme">🌙</button>
+                    <a href="{% url 'signup' %}" class="btn btn-primary btn-small">Get Started</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Messages -->
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="message message-{{ message.tags }}">
+                    <span>{{ message }}</span>
+                    <button onclick="this.parentElement.remove()" style="background:none;border:none;color:inherit;cursor:pointer;margin-left:auto;">&times;</button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="nav-logo">🐛 BugHunter</div>
+                    <p>AI-powered code analysis and security auditing</p>
+                </div>
+                
+                <div class="footer-links">
+                    <div class="footer-section">
+                        <h4>Product</h4>
+                        <a href="{% url 'landing' %}">Features</a>
+                        <a href="{% url 'bughunter' %}">Analyze Code</a>
+                        <a href="{% url 'dashboard' %}">Dashboard</a>
+                    </div>
+                    
+                    <div class="footer-section">
+                        <h4>Account</h4>
+                        <a href="{% url 'login' %}">Sign In</a>
+                        <a href="{% url 'signup' %}">Sign Up</a>
+                        <a href="{% url 'dashboard' %}">Profile</a>
+                    </div>
+                    
+                    <div class="footer-section">
+                        <h4>Support</h4>
+                        <a href="{% url 'documentation' %}">Documentation</a>
+                        <a href="#">Help Center</a>
+                        <a href="#">Contact</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 BugHunter. All rights reserved.</p>
+                <div class="footer-legal">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="{% static 'accounts/js/animations.js' %}"></script>
+    <script src="{% static 'accounts/js/particles.js' %}"></script>
+    <script>
+    // Auto-dismiss messages after 5 seconds
+    document.addEventListener('DOMContentLoaded', function() {
+        const messages = document.querySelectorAll('.message');
+        messages.forEach(function(message) {
+            setTimeout(function() {
+                if (message.parentElement) {
+                    message.style.opacity = '0';
+                    message.style.transform = 'translateY(-20px)';
+                    setTimeout(function() {
+                        message.remove();
+                    }, 300);
+                }
+            }, 5000);
+        });
+    });
+    </script>
+    {% block extra_js %}{% endblock %}
+    
+    <style>
+    /* Footer Styles */
+    .footer {
+        background: var(--bg-secondary);
+        border-top: 1px solid var(--border-subtle);
+        margin-top: var(--space-2xl);
+        padding: var(--space-2xl) 0 var(--space-lg);
+    }
+    
+    .footer-content {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: var(--space-2xl);
+        margin-bottom: var(--space-xl);
+    }
+    
+    .footer-brand p {
+        color: var(--text-muted);
+        margin-top: var(--space-sm);
+    }
+    
+    .footer-links {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--space-lg);
+    }
+    
+    .footer-section h4 {
+        color: var(--text-primary);
+        font-size: 0.875rem;
+        font-weight: 600;
+        margin-bottom: var(--space-md);
+    }
+    
+    .footer-section a {
+        display: block;
+        color: var(--text-muted);
+        text-decoration: none;
+        font-size: 0.875rem;
+        margin-bottom: var(--space-xs);
+        transition: color var(--transition-fast);
+    }
+    
+    .footer-section a:hover {
+        color: var(--text-primary);
+    }
+    
+    .footer-bottom {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: var(--space-lg);
+        border-top: 1px solid var(--border-subtle);
+    }
+    
+    .footer-bottom p {
+        color: var(--text-soft);
+        font-size: 0.875rem;
+        margin: 0;
+    }
+    
+    .footer-legal {
+        display: flex;
+        gap: var(--space-md);
+    }
+    
+    .footer-legal a {
+        color: var(--text-soft);
+        text-decoration: none;
+        font-size: 0.875rem;
+        transition: color var(--transition-fast);
+    }
+    
+    .footer-legal a:hover {
+        color: var(--text-muted);
+    }
+    
+    @media (max-width: 768px) {
+        .footer-content {
+            grid-template-columns: 1fr;
+            gap: var(--space-lg);
+        }
+        
+        .footer-links {
+            grid-template-columns: 1fr;
+            gap: var(--space-md);
+        }
+        
+        .footer-bottom {
+            flex-direction: column;
+            gap: var(--space-md);
+            text-align: center;
+        }
+    }
+    </style>
+</body>
+</html>

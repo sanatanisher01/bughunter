@@ -1,0 +1,1122 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}Analysis Results - BugHunter{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Results Page Specific Styles */
+.results-page {
+    padding: var(--space-lg) 0;
+    min-height: calc(100vh - 72px);
+}
+
+.results-header {
+    text-align: center;
+    margin-bottom: var(--space-xl);
+    padding: var(--space-xl) 0;
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-soft);
+}
+
+.results-title {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 700;
+    margin-bottom: var(--space-sm);
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.analysis-meta {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-lg);
+    flex-wrap: wrap;
+    margin-top: var(--space-md);
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+.meta-icon {
+    font-size: 1rem;
+}
+
+/* Summary Cards */
+.summary-section {
+    margin-bottom: var(--space-2xl);
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-lg);
+}
+
+.summary-card {
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    text-align: center;
+    transition: all var(--transition-medium);
+    position: relative;
+    overflow: hidden;
+}
+
+.summary-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--primary-gradient);
+}
+
+.summary-card.bugs::before { background: var(--danger); }
+.summary-card.vulnerabilities::before { background: var(--warning); }
+.summary-card.smells::before { background: var(--info); }
+.summary-card.quality::before { background: var(--success); }
+
+.summary-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-medium);
+}
+
+.summary-icon {
+    font-size: 2rem;
+    margin-bottom: var(--space-sm);
+}
+
+.summary-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: block;
+    margin-bottom: var(--space-xs);
+}
+
+.summary-label {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+/* VS Code Style Layout */
+.results-layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: var(--space-lg);
+    height: calc(100vh - 300px);
+    min-height: 600px;
+}
+
+/* File Explorer */
+.file-explorer {
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.explorer-header {
+    padding: var(--space-md);
+    background: var(--bg-soft);
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.explorer-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+.explorer-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-sm);
+}
+
+.file-tree {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    font-size: 0.875rem;
+    position: relative;
+}
+
+.file-item:hover {
+    background: var(--bg-soft);
+}
+
+.file-item.active {
+    background: rgba(123, 92, 255, 0.1);
+    color: #7B5CFF;
+    font-weight: 500;
+}
+
+.file-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #7B5CFF;
+}
+
+.file-icon {
+    font-size: 1rem;
+    opacity: 0.7;
+}
+
+.file-name {
+    flex: 1;
+    font-family: var(--font-code);
+}
+
+.issue-count {
+    background: var(--danger);
+    color: white;
+    font-size: 0.75rem;
+    padding: 2px 6px;
+    border-radius: 10px;
+    min-width: 18px;
+    text-align: center;
+}
+
+.issue-count.warning { background: var(--warning); }
+.issue-count.info { background: var(--info); }
+
+/* Content Panel */
+.content-panel {
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.panel-header {
+    padding: var(--space-md);
+    background: var(--bg-soft);
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.panel-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    margin: 0;
+    font-family: var(--font-code);
+}
+
+.panel-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.severity-filter {
+    padding: var(--space-xs) var(--space-sm);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 0.75rem;
+}
+
+.panel-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-md);
+}
+
+/* Findings */
+.findings-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.finding-category {
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.category-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-md);
+    background: var(--bg-soft);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.category-header:hover {
+    background: var(--bg-elevated);
+}
+
+.category-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.category-icon {
+    font-size: 1.25rem;
+}
+
+.category-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.category-count {
+    background: var(--danger);
+    color: white;
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 500;
+}
+
+.category-count.vulnerabilities { background: var(--warning); }
+.category-count.smells { background: var(--info); }
+.category-count.practices { background: var(--success); }
+
+.toggle-icon {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    transition: transform var(--transition-fast);
+}
+
+.category-header.expanded .toggle-icon {
+    transform: rotate(90deg);
+}
+
+.category-content {
+    display: none;
+    padding: 0;
+}
+
+.category-content.expanded {
+    display: block;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        max-height: 0;
+    }
+    to {
+        opacity: 1;
+        max-height: 1000px;
+    }
+}
+
+.finding-item {
+    padding: var(--space-md);
+    border-bottom: 1px solid var(--border-subtle);
+    transition: all var(--transition-fast);
+}
+
+.finding-item:last-child {
+    border-bottom: none;
+}
+
+.finding-item:hover {
+    background: var(--bg-soft);
+}
+
+.finding-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: var(--space-sm);
+    gap: var(--space-md);
+}
+
+.finding-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    margin: 0;
+    flex: 1;
+}
+
+.severity-badge {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.severity-critical {
+    background: var(--danger);
+    color: white;
+}
+
+.severity-high {
+    background: var(--warning);
+    color: white;
+}
+
+.severity-medium {
+    background: var(--info);
+    color: white;
+}
+
+.severity-low {
+    background: var(--success);
+    color: white;
+}
+
+.severity-info {
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    border: 1px solid var(--border-subtle);
+}
+
+.finding-description {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    margin-bottom: var(--space-sm);
+}
+
+.finding-location {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-family: var(--font-code);
+    margin-bottom: var(--space-sm);
+}
+
+.finding-fix {
+    background: rgba(0, 210, 127, 0.1);
+    border: 1px solid var(--success);
+    border-radius: var(--radius-sm);
+    padding: var(--space-sm);
+    margin-bottom: var(--space-sm);
+}
+
+.fix-title {
+    color: var(--success);
+    font-weight: 600;
+    font-size: 0.875rem;
+    margin-bottom: var(--space-xs);
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.fix-description {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+/* Code Examples */
+.code-example {
+    margin-top: var(--space-sm);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+.code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-xs) var(--space-sm);
+    background: var(--bg-soft);
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.code-title {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.copy-button {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.75rem;
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+}
+
+.copy-button:hover {
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+}
+
+.code-content {
+    padding: var(--space-sm);
+    background: var(--bg-primary);
+    overflow-x: auto;
+}
+
+.code-content pre {
+    margin: 0;
+    font-family: var(--font-code);
+    font-size: 0.875rem;
+    line-height: 1.4;
+    color: var(--text-primary);
+}
+
+.code-content code {
+    color: var(--text-primary);
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: var(--space-2xl);
+    color: var(--text-muted);
+}
+
+.empty-icon {
+    font-size: 4rem;
+    margin-bottom: var(--space-lg);
+    opacity: 0.5;
+}
+
+.empty-title {
+    color: var(--success);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: var(--space-sm);
+}
+
+.empty-description {
+    margin-bottom: var(--space-lg);
+    font-size: 1rem;
+}
+
+/* Action Buttons */
+.results-actions {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-md);
+    margin-top: var(--space-2xl);
+    flex-wrap: wrap;
+}
+
+/* File Findings Display Fix */
+.file-findings {
+    display: none;
+}
+
+.file-findings.active {
+    display: block;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .results-layout {
+        grid-template-columns: 250px 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .results-layout {
+        grid-template-columns: 1fr;
+        height: auto;
+    }
+    
+    .file-explorer {
+        order: 2;
+        max-height: 300px;
+    }
+    
+    .content-panel {
+        order: 1;
+        min-height: 400px;
+    }
+    
+    .summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .analysis-meta {
+        flex-direction: column;
+        gap: var(--space-sm);
+    }
+}
+
+@media (max-width: 480px) {
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .results-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .finding-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-sm);
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // File explorer functionality
+    const fileItems = document.querySelectorAll('.file-item');
+    const panelTitle = document.querySelector('.panel-title');
+    const panelContent = document.querySelector('.panel-content');
+    
+    fileItems.forEach(item => {
+        item.addEventListener('click', function() {
+            // Remove active class from all items
+            fileItems.forEach(i => i.classList.remove('active'));
+            
+            // Add active class to clicked item
+            this.classList.add('active');
+            
+            // Update panel title
+            const fileName = this.querySelector('.file-name').textContent;
+            panelTitle.textContent = fileName;
+            
+            // Show corresponding findings
+            const fileId = this.dataset.file;
+            showFileFindings(fileId);
+        });
+    });
+    
+    // Category accordion functionality
+    const categoryHeaders = document.querySelectorAll('.category-header');
+    
+    categoryHeaders.forEach(header => {
+        header.addEventListener('click', function() {
+            const content = this.nextElementSibling;
+            const isExpanded = this.classList.contains('expanded');
+            
+            if (isExpanded) {
+                this.classList.remove('expanded');
+                content.classList.remove('expanded');
+                content.style.display = 'none';
+            } else {
+                this.classList.add('expanded');
+                content.classList.add('expanded');
+                content.style.display = 'block';
+            }
+        });
+    });
+    
+    // Severity filter functionality
+    const severityFilter = document.getElementById('severity-filter');
+    if (severityFilter) {
+        severityFilter.addEventListener('change', function() {
+            const selectedSeverity = this.value;
+            const findingItems = document.querySelectorAll('.finding-item');
+            
+            findingItems.forEach(item => {
+                const severity = item.dataset.severity;
+                if (selectedSeverity === 'all' || severity === selectedSeverity) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    }
+    
+    // Copy code functionality
+    const copyButtons = document.querySelectorAll('.copy-button');
+    
+    copyButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const codeContent = this.closest('.code-example').querySelector('pre').textContent;
+            
+            navigator.clipboard.writeText(codeContent).then(() => {
+                this.textContent = 'Copied!';
+                setTimeout(() => {
+                    this.textContent = 'Copy';
+                }, 2000);
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = codeContent;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                this.textContent = 'Copied!';
+                setTimeout(() => {
+                    this.textContent = 'Copy';
+                }, 2000);
+            });
+        });
+    });
+    
+    // Initialize first file as active
+    if (fileItems.length > 0) {
+        fileItems[0].click();
+        // Also show the first file's findings
+        const firstFileFindings = document.querySelector('.file-findings[data-file="1"]');
+        if (firstFileFindings) {
+            firstFileFindings.classList.add('active');
+            firstFileFindings.style.display = 'block';
+        }
+    }
+    
+    // Expand first category by default
+    if (categoryHeaders.length > 0) {
+        categoryHeaders[0].click();
+    }
+    
+    function showFileFindings(fileId) {
+        // Hide all file findings and remove active class
+        document.querySelectorAll('.file-findings').forEach(findings => {
+            findings.style.display = 'none';
+            findings.classList.remove('active');
+        });
+        
+        // Show the selected file's findings
+        const selectedFindings = document.querySelector(`.file-findings[data-file="${fileId}"]`);
+        if (selectedFindings) {
+            selectedFindings.style.display = 'block';
+            selectedFindings.classList.add('active');
+        }
+    }
+    
+    // Search functionality
+    const searchInput = document.getElementById('findings-search');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const findingItems = document.querySelectorAll('.finding-item');
+            
+            findingItems.forEach(item => {
+                const title = item.querySelector('.finding-title').textContent.toLowerCase();
+                const description = item.querySelector('.finding-description').textContent.toLowerCase();
+                
+                if (title.includes(searchTerm) || description.includes(searchTerm)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    }
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="results-page">
+    <div class="container">
+        <!-- Results Header -->
+        <div class="results-header">
+            <h1 class="results-title">🔍 Analysis Complete</h1>
+            <div class="analysis-meta">
+                <div class="meta-item">
+                    <span class="meta-icon">📁</span>
+                    <span>
+                        {% if job.github_url %}
+                            GitHub: {{ job.github_url|truncatechars:50 }}
+                        {% elif job.zip_file %}
+                            ZIP: {{ job.zip_file.name|truncatechars:30 }}
+                        {% else %}
+                            Direct Code Input ({{ job.language|title }})
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-icon">📅</span>
+                    <span>{{ job.created_at|date:"M d, Y H:i" }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-icon">⏱️</span>
+                    <span>{{ analysis_duration|default:"2m 34s" }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Language Mismatch Warning -->
+        {% if messages %}
+        <div class="language-warning" style="margin-bottom: var(--space-xl);">
+            {% for message in messages %}
+            {% if message.tags == 'warning' %}
+            <div class="alert alert-warning" style="background: rgba(255, 195, 0, 0.1); border: 1px solid var(--warning); border-radius: var(--radius-md); padding: var(--space-md); display: flex; align-items: center; gap: var(--space-sm);">
+                <span style="font-size: 1.25rem;">⚠️</span>
+                <div>
+                    <strong>Language Detection:</strong> {{ message }}
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <!-- Summary Section -->
+        <div class="summary-section">
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <div class="summary-icon">📁</div>
+                    <span class="summary-number">{{ job.summary.total_files|default:"0" }}</span>
+                    <span class="summary-label">Files Analyzed</span>
+                </div>
+                <div class="summary-card bugs">
+                    <div class="summary-icon">🐛</div>
+                    <span class="summary-number">{{ job.summary.total_bugs|default:"0" }}</span>
+                    <span class="summary-label">Bugs Found</span>
+                </div>
+                <div class="summary-card vulnerabilities">
+                    <div class="summary-icon">🔒</div>
+                    <span class="summary-number">{{ job.summary.total_vulnerabilities|default:"0" }}</span>
+                    <span class="summary-label">Security Issues</span>
+                </div>
+                <div class="summary-card smells">
+                    <div class="summary-icon">🧹</div>
+                    <span class="summary-number">{{ job.summary.total_smells|default:"0" }}</span>
+                    <span class="summary-label">Code Smells</span>
+                </div>
+                <div class="summary-card quality">
+                    <div class="summary-icon">✨</div>
+                    <span class="summary-number">{{ job.summary.risk_score|default:"A+" }}</span>
+                    <span class="summary-label">Quality Score</span>
+                </div>
+            </div>
+        </div>
+        
+        {% if job.details %}
+        <!-- VS Code Style Results Layout -->
+        <div class="results-layout">
+            <!-- File Explorer -->
+            <div class="file-explorer">
+                <div class="explorer-header">
+                    <span>📂</span>
+                    <h3 class="explorer-title">Project Files</h3>
+                </div>
+                <div class="explorer-content">
+                    <ul class="file-tree">
+                        {% for file_path, findings in job.details.items %}
+                        <li class="file-item" data-file="{{ forloop.counter }}">
+                            <span class="file-icon">
+                                {% if '.py' in file_path %}🐍
+                                {% elif '.js' in file_path or '.ts' in file_path %}🟨
+                                {% elif '.java' in file_path %}☕
+                                {% elif '.go' in file_path %}🔵
+                                {% elif '.cpp' in file_path or '.c' in file_path %}🔴
+                                {% elif '.rb' in file_path %}🔴
+                                {% elif '.php' in file_path %}🟣
+                                {% elif '.rs' in file_path %}🦀
+                                {% else %}📄
+                                {% endif %}
+                            </span>
+                            <span class="file-name">{{ file_path|truncatechars:25 }}</span>
+                            {% with total_issues=findings.bugs|length|add:findings.vulnerabilities|length|add:findings.smells|length %}
+                            {% if total_issues > 0 %}
+                                <span class="issue-count
+                                    {% if findings.vulnerabilities %}warning
+                                    {% elif findings.bugs %}danger
+                                    {% else %}info{% endif %}
+                                ">{{ total_issues }}</span>
+                            {% endif %}
+                            {% endwith %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Content Panel -->
+            <div class="content-panel">
+                <div class="panel-header">
+                    <h3 class="panel-title">Select a file to view findings</h3>
+                    <div class="panel-controls">
+                        <input type="text" id="findings-search" placeholder="Search findings..." 
+                               style="padding: var(--space-xs); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); background: var(--bg-elevated); color: var(--text-primary); font-size: 0.75rem; width: 150px;">
+                        <select id="severity-filter" class="severity-filter">
+                            <option value="all">All Severities</option>
+                            <option value="critical">Critical</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="panel-content">
+                    <div class="findings-container">
+                        {% for file_path, findings in job.details.items %}
+                        <div class="file-findings" data-file="{{ forloop.counter }}" style="{% if not forloop.first %}display: none;{% endif %}">
+                            {% if findings.bugs %}
+                            <div class="finding-category">
+                                <div class="category-header">
+                                    <div class="category-info">
+                                        <span class="category-icon">🐛</span>
+                                        <h4 class="category-title">Bugs</h4>
+                                        <span class="category-count bugs">{{ findings.bugs|length }}</span>
+                                    </div>
+                                    <span class="toggle-icon">▶</span>
+                                </div>
+                                <div class="category-content">
+                                    {% for bug in findings.bugs %}
+                                    <div class="finding-item" data-severity="{{ bug.severity|default:'medium' }}">
+                                        <div class="finding-header">
+                                            <h5 class="finding-title">{{ bug.title }}</h5>
+                                            <span class="severity-badge severity-{{ bug.severity|default:'medium' }}">{{ bug.severity|default:'Medium'|upper }}</span>
+                                        </div>
+                                        <p class="finding-description">{{ bug.description|safe }}</p>
+                                        {% if bug.line_range %}
+                                        <div class="finding-location">
+                                            <span>📍</span>
+                                            <span>Lines {{ bug.line_range.0 }}-{{ bug.line_range.1 }}</span>
+                                        </div>
+                                        {% endif %}
+                                        {% if bug.suggested_fix %}
+                                        <div class="finding-fix">
+                                            <div class="fix-title">
+                                                <span>🔧</span>
+                                                <span>Suggested Fix</span>
+                                            </div>
+                                            <div class="fix-description">{{ bug.suggested_fix|safe }}</div>
+                                        </div>
+                                        {% endif %}
+                                        {% if bug.fixed_code_example %}
+                                        <div class="code-example">
+                                            <div class="code-header">
+                                                <h6 class="code-title">Fixed Code Example</h6>
+                                                <button class="copy-button">Copy</button>
+                                            </div>
+                                            <div class="code-content">
+                                                <pre><code>{{ bug.fixed_code_example }}</code></pre>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            {% if findings.vulnerabilities %}
+                            <div class="finding-category">
+                                <div class="category-header">
+                                    <div class="category-info">
+                                        <span class="category-icon">🔒</span>
+                                        <h4 class="category-title">Security Vulnerabilities</h4>
+                                        <span class="category-count vulnerabilities">{{ findings.vulnerabilities|length }}</span>
+                                    </div>
+                                    <span class="toggle-icon">▶</span>
+                                </div>
+                                <div class="category-content">
+                                    {% for vuln in findings.vulnerabilities %}
+                                    <div class="finding-item" data-severity="{{ vuln.severity|default:'high' }}">
+                                        <div class="finding-header">
+                                            <h5 class="finding-title">{{ vuln.title }}</h5>
+                                            <span class="severity-badge severity-{{ vuln.severity|default:'high' }}">{{ vuln.severity|default:'High'|upper }}</span>
+                                        </div>
+                                        <p class="finding-description">{{ vuln.description|safe }}</p>
+                                        {% if vuln.line_range %}
+                                        <div class="finding-location">
+                                            <span>📍</span>
+                                            <span>Lines {{ vuln.line_range.0 }}-{{ vuln.line_range.1 }}</span>
+                                        </div>
+                                        {% endif %}
+                                        {% if vuln.suggested_fix %}
+                                        <div class="finding-fix">
+                                            <div class="fix-title">
+                                                <span>🔒</span>
+                                                <span>Security Fix</span>
+                                            </div>
+                                            <div class="fix-description">{{ vuln.suggested_fix|safe }}</div>
+                                        </div>
+                                        {% endif %}
+                                        {% if vuln.fixed_code_example %}
+                                        <div class="code-example">
+                                            <div class="code-header">
+                                                <h6 class="code-title">Secure Code Example</h6>
+                                                <button class="copy-button">Copy</button>
+                                            </div>
+                                            <div class="code-content">
+                                                <pre><code>{{ vuln.fixed_code_example }}</code></pre>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            {% if findings.smells %}
+                            <div class="finding-category">
+                                <div class="category-header">
+                                    <div class="category-info">
+                                        <span class="category-icon">🧹</span>
+                                        <h4 class="category-title">Code Quality Issues</h4>
+                                        <span class="category-count smells">{{ findings.smells|length }}</span>
+                                    </div>
+                                    <span class="toggle-icon">▶</span>
+                                </div>
+                                <div class="category-content">
+                                    {% for smell in findings.smells %}
+                                    <div class="finding-item" data-severity="{{ smell.category|default:'low' }}">
+                                        <div class="finding-header">
+                                            <h5 class="finding-title">{{ smell.title }}</h5>
+                                            <span class="severity-badge severity-info">{{ smell.category|default:'Quality'|upper }}</span>
+                                        </div>
+                                        <p class="finding-description">{{ smell.description|safe }}</p>
+                                        {% if smell.line_range %}
+                                        <div class="finding-location">
+                                            <span>📍</span>
+                                            <span>Lines {{ smell.line_range.0 }}-{{ smell.line_range.1 }}</span>
+                                        </div>
+                                        {% endif %}
+                                        {% if smell.suggested_fix %}
+                                        <div class="finding-fix">
+                                            <div class="fix-title">
+                                                <span>✨</span>
+                                                <span>Improvement Suggestion</span>
+                                            </div>
+                                            <div class="fix-description">{{ smell.suggested_fix|safe }}</div>
+                                        </div>
+                                        {% endif %}
+                                        {% if smell.improved_code_example %}
+                                        <div class="code-example">
+                                            <div class="code-header">
+                                                <h6 class="code-title">Improved Code Example</h6>
+                                                <button class="copy-button">Copy</button>
+                                            </div>
+                                            <div class="code-content">
+                                                <pre><code>{{ smell.improved_code_example }}</code></pre>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            {% if findings.best_practices %}
+                            <div class="finding-category">
+                                <div class="category-header">
+                                    <div class="category-info">
+                                        <span class="category-icon">✨</span>
+                                        <h4 class="category-title">Best Practices</h4>
+                                        <span class="category-count practices">{{ findings.best_practices|length }}</span>
+                                    </div>
+                                    <span class="toggle-icon">▶</span>
+                                </div>
+                                <div class="category-content">
+                                    {% for practice in findings.best_practices %}
+                                    <div class="finding-item" data-severity="info">
+                                        <div class="finding-header">
+                                            <h5 class="finding-title">{{ practice.title }}</h5>
+                                            <span class="severity-badge severity-info">BEST PRACTICE</span>
+                                        </div>
+                                        <p class="finding-description">{{ practice.description|safe }}</p>
+                                        {% if practice.example %}
+                                        <div class="code-example">
+                                            <div class="code-header">
+                                                <h6 class="code-title">Example</h6>
+                                                <button class="copy-button">Copy</button>
+                                            </div>
+                                            <div class="code-content">
+                                                <pre><code>{{ practice.example }}</code></pre>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <!-- Empty State -->
+        <div class="empty-state">
+            <div class="empty-icon">✅</div>
+            <h3 class="empty-title">Excellent Code Quality!</h3>
+            <p class="empty-description">No significant issues were found in your code. Your project appears to be well-written and secure.</p>
+            <div class="results-actions">
+                <a href="{% url 'bughunter' %}" class="btn btn-primary btn-large">
+                    🔍 Analyze Another Project
+                </a>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Action Buttons -->
+        <div class="results-actions">
+            <a href="{% url 'bughunter' %}" class="btn btn-primary btn-large">
+                🔍 New Analysis
+            </a>
+            <a href="{% url 'dashboard' %}" class="btn btn-secondary btn-large">
+                📈 Dashboard
+            </a>
+            <button onclick="window.print()" class="btn btn-secondary btn-large">
+                🖨️ Export Report
+            </button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

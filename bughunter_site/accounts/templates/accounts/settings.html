@@ -1,0 +1,750 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}Settings - BugHunter{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Settings Page Layout */
+.settings-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #050816 0%, #0b1120 100%);
+    color: #ffffff;
+}
+
+/* Sticky Header */
+.settings-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(5, 8, 22, 0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 24px 0;
+}
+
+.header-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.header-icon {
+    font-size: 32px;
+    opacity: 0.9;
+}
+
+.settings-title {
+    font-size: 32px;
+    font-weight: 700;
+    margin: 0;
+    background: linear-gradient(135deg, #7B5CFF 0%, #B721FF 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.settings-subtitle {
+    font-size: 16px;
+    color: #9ca3af;
+    margin: 4px 0 0 0;
+}
+
+/* Settings Container */
+.settings-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 24px;
+}
+
+.settings-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    align-items: start;
+}
+
+.settings-column {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* Settings Cards */
+.settings-card {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.settings-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(123, 92, 255, 0.15);
+    border-color: rgba(123, 92, 255, 0.3);
+}
+
+.danger-card {
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.danger-card:hover {
+    border-color: rgba(239, 68, 68, 0.5);
+    box-shadow: 0 20px 40px rgba(239, 68, 68, 0.15);
+}
+
+/* Card Headers */
+.card-header {
+    padding: 24px 28px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: linear-gradient(135deg, rgba(123, 92, 255, 0.05) 0%, rgba(183, 33, 255, 0.05) 100%);
+}
+
+.card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 6px;
+}
+
+.card-description {
+    font-size: 14px;
+    color: #9ca3af;
+    line-height: 1.5;
+}
+
+.card-content {
+    padding: 28px;
+}
+
+/* Profile Form */
+.profile-form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.field-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #e5e7eb;
+}
+
+.field-input {
+    padding: 12px 16px;
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.field-input:focus {
+    outline: none;
+    border-color: #7B5CFF;
+    box-shadow: 0 0 0 3px rgba(123, 92, 255, 0.1);
+    background: rgba(15, 23, 42, 1);
+}
+
+.field-help {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 8px;
+}
+
+/* Settings Lists */
+.settings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.2s ease;
+}
+
+.setting-item:last-child {
+    border-bottom: none;
+}
+
+.setting-item:hover {
+    background: rgba(123, 92, 255, 0.05);
+    margin: 0 -16px;
+    padding: 16px;
+    border-radius: 8px;
+}
+
+.setting-info {
+    flex: 1;
+}
+
+.setting-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: #ffffff;
+    margin-bottom: 4px;
+}
+
+.setting-desc {
+    font-size: 13px;
+    color: #9ca3af;
+    line-height: 1.4;
+}
+
+/* Toggle Switches */
+.toggle {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+    border-radius: 24px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background: white;
+    transition: all 0.3s ease;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+input:checked + .toggle-slider {
+    background: linear-gradient(135deg, #7B5CFF 0%, #B721FF 100%);
+}
+
+input:checked + .toggle-slider:before {
+    transform: translateX(20px);
+}
+
+/* Status Chips */
+.status-chip {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.status-chip.verified {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+}
+
+.status-chip.unverified {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+/* Buttons */
+.btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #7B5CFF 0%, #B721FF 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(123, 92, 255, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(123, 92, 255, 0.4);
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: #e5e7eb;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.btn-ghost {
+    background: transparent;
+    color: #9ca3af;
+    border: 1px solid transparent;
+}
+
+.btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #e5e7eb;
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+}
+
+.btn-danger:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 13px;
+}
+
+/* Preferences */
+.preference-section {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.preference-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.preference-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: #ffffff;
+    margin-bottom: 4px;
+}
+
+.preference-desc {
+    font-size: 13px;
+    color: #9ca3af;
+}
+
+/* Theme Selector */
+.theme-selector {
+    display: flex;
+    gap: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 4px;
+    border-radius: 8px;
+}
+
+.theme-btn {
+    padding: 8px 12px;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    color: #9ca3af;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.theme-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #e5e7eb;
+}
+
+.theme-btn.active {
+    background: linear-gradient(135deg, #7B5CFF 0%, #B721FF 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(123, 92, 255, 0.3);
+}
+
+/* Dark Select */
+.custom-select {
+    position: relative;
+}
+
+.dark-select {
+    padding: 8px 32px 8px 12px;
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 13px;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5"><path fill="%23FFFFFF" d="M2 0L0 2h4zm0 5L0 3h4z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 12px;
+    transition: all 0.3s ease;
+}
+
+.dark-select:focus {
+    outline: none;
+    border-color: #7B5CFF;
+    box-shadow: 0 0 0 3px rgba(123, 92, 255, 0.1);
+}
+
+.dark-select option {
+    background: #0f172a;
+    color: #ffffff;
+}
+
+/* Danger Zone */
+.danger-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+
+.danger-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: #ffffff;
+    margin-bottom: 4px;
+}
+
+.danger-desc {
+    font-size: 13px;
+    color: #9ca3af;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .settings-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+    
+    .header-content {
+        padding: 0 16px;
+    }
+    
+    .settings-container {
+        padding: 24px 16px;
+    }
+    
+    .card-header,
+    .card-content {
+        padding: 20px;
+    }
+    
+    .setting-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .preference-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .theme-selector {
+        width: 100%;
+    }
+    
+    .theme-btn {
+        flex: 1;
+        text-align: center;
+    }
+    
+    .form-actions {
+        justify-content: stretch;
+    }
+    
+    .btn {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="settings-page">
+    <!-- Sticky Header -->
+    <div class="settings-header">
+        <div class="header-content">
+            <div class="header-icon">⚙️</div>
+            <div class="header-text">
+                <h1 class="settings-title">Settings</h1>
+                <p class="settings-subtitle">Manage your account, notifications, and preferences</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Grid -->
+    <div class="settings-container">
+        <div class="settings-grid">
+            <!-- Left Column -->
+            <div class="settings-column">
+                <!-- Profile Card -->
+                <div class="settings-card">
+                    <div class="card-header">
+                        <h3 class="card-title">👤 Profile Information</h3>
+                        <p class="card-description">Update your personal information and account details</p>
+                    </div>
+                    <div class="card-content">
+                        <form class="profile-form">
+                            <div class="form-field">
+                                <label for="name" class="field-label">Full Name</label>
+                                <input type="text" id="name" value="{{ user.name|default:user.first_name }}" class="field-input">
+                            </div>
+                            <div class="form-field">
+                                <label for="email" class="field-label">Email Address</label>
+                                <input type="email" id="email" value="{{ user.email }}" class="field-input">
+                                <span class="field-help">Email verification required for changes</span>
+                            </div>
+                            <div class="form-field">
+                                <label for="username" class="field-label">Username</label>
+                                <input type="text" id="username" value="{{ user.username }}" class="field-input">
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Danger Zone Card -->
+                <div class="settings-card danger-card">
+                    <div class="card-header">
+                        <h3 class="card-title">⚠️ Danger Zone</h3>
+                        <p class="card-description">Irreversible and destructive actions</p>
+                    </div>
+                    <div class="card-content">
+                        <div class="danger-item">
+                            <div class="danger-info">
+                                <h4 class="danger-title">🗑️ Delete Account</h4>
+                                <p class="danger-desc">Permanently delete your account and all associated data</p>
+                            </div>
+                            <button class="btn btn-danger">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="settings-column">
+                <!-- Notifications Card -->
+                <div class="settings-card">
+                    <div class="card-header">
+                        <h3 class="card-title">🔔 Notifications</h3>
+                        <p class="card-description">Manage your email preferences and alerts</p>
+                    </div>
+                    <div class="card-content">
+                        <div class="settings-list">
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <div class="setting-title">✅ Analysis Complete</div>
+                                    <div class="setting-desc">Get notified when your code analysis is finished</div>
+                                </div>
+                                <label class="toggle">
+                                    <input type="checkbox" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <div class="setting-title">❌ Analysis Failed</div>
+                                    <div class="setting-desc">Receive alerts when analysis encounters errors</div>
+                                </div>
+                                <label class="toggle">
+                                    <input type="checkbox" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <div class="setting-title">📊 Weekly Summary</div>
+                                    <div class="setting-desc">Get a weekly report of your analysis activity</div>
+                                </div>
+                                <label class="toggle">
+                                    <input type="checkbox">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <div class="setting-title">🚀 Product Updates</div>
+                                    <div class="setting-desc">Stay informed about new features and improvements</div>
+                                </div>
+                                <label class="toggle">
+                                    <input type="checkbox">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security Card -->
+                <div class="settings-card">
+                    <div class="card-header">
+                        <h3 class="card-title">🔒 Security</h3>
+                        <p class="card-description">Manage your account security and privacy</p>
+                    </div>
+                    <div class="card-content">
+                        <div class="settings-list">
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <div class="setting-title">🔑 Change Password</div>
+                                    <div class="setting-desc">Update your account password for better security</div>
+                                </div>
+                                <button class="btn btn-secondary btn-sm">Change</button>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <div class="setting-title">📧 Email Verification</div>
+                                    <div class="setting-desc">{% if user.is_verified %}<span class="status-chip verified">✅ Verified</span>{% else %}<span class="status-chip unverified">❌ Not Verified</span>{% endif %}</div>
+                                </div>
+                                {% if not user.is_verified %}
+                                <button class="btn btn-primary btn-sm">Resend</button>
+                                {% endif %}
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <div class="setting-title">📱 Account Activity</div>
+                                    <div class="setting-desc">Last login: {{ user.last_login|date:"M d, Y H:i" }}</div>
+                                </div>
+                                <button class="btn btn-ghost btn-sm">View Activity</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preferences Card -->
+                <div class="settings-card">
+                    <div class="card-header">
+                        <h3 class="card-title">🎨 Preferences</h3>
+                        <p class="card-description">Customize your BugHunter experience</p>
+                    </div>
+                    <div class="card-content">
+                        <div class="preference-section">
+                            <div class="preference-item">
+                                <div class="preference-info">
+                                    <div class="preference-title">🌙 Theme</div>
+                                    <div class="preference-desc">Choose your preferred color scheme</div>
+                                </div>
+                                <div class="theme-selector">
+                                    <button class="theme-btn active" data-theme="dark">🌙 Dark</button>
+                                    <button class="theme-btn" data-theme="light">☀️ Light</button>
+                                    <button class="theme-btn" data-theme="auto">🔄 Auto</button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Enhanced Settings Interactions
+document.addEventListener('DOMContentLoaded', function() {
+    // Theme selector functionality
+    document.querySelectorAll('.theme-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+            button.classList.add('active');
+            
+            const theme = button.dataset.theme;
+            if (theme === 'auto') {
+                localStorage.removeItem('theme');
+                document.documentElement.setAttribute('data-theme', 
+                    window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+                );
+            } else {
+                localStorage.setItem('theme', theme);
+                document.documentElement.setAttribute('data-theme', theme);
+            }
+        });
+    });
+    
+    // Card hover animations
+    document.querySelectorAll('.settings-card').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-4px)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+    
+    // Toggle accessibility
+    document.querySelectorAll('.toggle input').forEach(toggle => {
+        toggle.addEventListener('keydown', function(e) {
+            if (e.key === ' ' || e.key === 'Enter') {
+                e.preventDefault();
+                this.checked = !this.checked;
+            }
+        });
+    });
+    
+    // Button hover effects
+    document.querySelectorAll('.btn').forEach(btn => {
+        btn.addEventListener('mouseenter', function() {
+            if (this.classList.contains('btn-primary')) {
+                this.style.transform = 'translateY(-2px)';
+            } else if (this.classList.contains('btn-danger')) {
+                this.style.transform = 'translateY(-1px)';
+            }
+        });
+        
+        btn.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+});
+</script>
+{% endblock %}
