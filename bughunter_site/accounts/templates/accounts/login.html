@@ -430,6 +430,19 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                     {% endif %}
                     
+                    {% if unverified_user %}
+                        <div class="resend-verification" style="margin-bottom: var(--space-md); padding: var(--space-md); background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3); border-radius: var(--radius-md); text-align: center;">
+                            <p style="margin: 0 0 var(--space-sm) 0; color: var(--text-primary); font-size: 0.875rem;">📧 Email not verified yet?</p>
+                            <form method="post" action="{% url 'resend_verification' %}" style="display: inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="email" value="{{ unverified_user.email }}">
+                                <button type="submit" class="btn btn-secondary" style="font-size: 0.875rem; padding: 0.5rem 1rem;">
+                                    📤 Resend Verification Email
+                                </button>
+                            </form>
+                        </div>
+                    {% endif %}
+                    
                     <button type="submit" class="btn btn-primary btn-large submit-button">
                         🔑 Sign In
                     </button>

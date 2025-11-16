@@ -7,6 +7,7 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
     path('verify-email/', views.verify_email_view, name='verify_email'),
+    path('resend-verification/', views.resend_verification_view, name='resend_verification'),
     path('dashboard/', views.dashboard_view, name='dashboard'),
     path('bughunter/', views.bughunter_view, name='bughunter'),
     path('bughunter/results/<int:job_id>/', views.bughunter_results_view, name='bughunter_results'),

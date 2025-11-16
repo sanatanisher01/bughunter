@@ -56,6 +56,8 @@ def signup_view(request):
 
 def login_view(request):
     """User login with verification check."""
+    unverified_user = None
+    
     if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():
@@ -64,12 +66,16 @@ def login_view(request):
             user = authenticate(request, username=username, password=password)
             
             if user:
-                login(request, user)
-                return redirect('dashboard')
+                if user.is_verified:
+                    login(request, user)
+                    return redirect('dashboard')
+                else:
+                    unverified_user = user
+                    messages.error(request, 'Please verify your email before logging in.')
     else:
         form = LoginForm()
     
-    return render(request, 'accounts/login.html', {'form': form})
+    return render(request, 'accounts/login.html', {'form': form, 'unverified_user': unverified_user})
 
 
 def logout_view(request):
@@ -92,6 +98,36 @@ def verify_email_view(request):
     
     messages.error(request, 'Invalid or expired verification token.')
     return render(request, 'accounts/verify_failed.html')
+
+
+def resend_verification_view(request):
+    """Resend verification email for unverified users."""
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        if email:
+            try:
+                user = User.objects.get(email=email, is_verified=False)
+                
+                # Create new verification token
+                token = create_verification_token(user)
+                
+                # Send verification email
+                verification_url = request.build_absolute_uri(
+                    reverse('verify_email') + f'?token={token.token}'
+                )
+                
+                if EmailService.send_verification_email(user, verification_url):
+                    messages.success(request, 'Verification email sent! Please check your inbox.')
+                else:
+                    messages.error(request, 'Failed to send verification email. Please try again.')
+                    
+            except User.DoesNotExist:
+                # Don't reveal if email exists or not for security
+                messages.success(request, 'If an unverified account with that email exists, we\'ve sent a verification link.')
+        
+        return redirect('login')
+    
+    return redirect('login')
 
 
 def verified_user_required(view_func):
